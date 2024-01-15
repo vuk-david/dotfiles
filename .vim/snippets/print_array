@@ -1,0 +1,12 @@
+	bool first = true;
+	std::cout << "\n\t<++>: [";
+	for (auto x: <++>)
+	{
+		if (!first)
+			std::cout << ", ";
+
+		std::cout << x;
+		first = false;
+	}
+	std::cout << "]\n\n";
+

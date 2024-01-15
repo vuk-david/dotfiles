@@ -1,0 +1,12 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhistcnt =3
+let g:netrw_dirhist_3='/home/vuk/.config/alacritty'
+let g:netrw_dirhist_2='/home/vuk/.local/share/fonts/tamzen-font-master'
+let g:netrw_dirhist_1='/home/vuk/.config/ranger/plugins'
+let g:netrw_dirhist_0='/home/vuk/.config/dunst'
+let g:netrw_dirhist_9='/home/vuk/MojeStvari'
+let g:netrw_dirhist_8='/home/vuk/.config/i3blocks'
+let g:netrw_dirhist_7='/home/vuk/.config'
+let g:netrw_dirhist_6='/home/vuk/ovo/colors'
+let g:netrw_dirhist_5='/home/vuk/ovo'
+let g:netrw_dirhist_4='/home/vuk/Desktop/Posalji/dotfiles/.vim'

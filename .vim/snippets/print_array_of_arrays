@@ -1,0 +1,24 @@
+	/* Write Output */
+	bool first = true;
+	std::cout << "\n\tResults: [";
+	for (auto x: <++>)
+	{
+		if (!first)
+			std::cout << ", ";
+
+		bool first_first = true;
+		std::cout << "[";
+		for (const auto& xx : x)
+		{
+			if (!first_first)
+				std::cout << ", ";
+
+			std::cout << xx;
+			first_first = false;
+		}
+		std::cout << "]";
+
+		first = false;
+	}
+	std::cout << "]\n\n";
+
