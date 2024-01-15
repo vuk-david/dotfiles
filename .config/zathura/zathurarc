@@ -1,0 +1,24 @@
+# Sets
+set selection-clipboard clipboard
+set recolor true
+
+#set recolor-darkcolor "#2A2426"    # Ona Moja Hexa Boja
+#set recolor-lightcolor "#000000"
+
+# set recolor-darkcolor  "#79554800" # Lepa Dark Brown
+# set recolor-lightcolor "#000000"
+
+set recolor-darkcolor  "#795548"
+set recolor-lightcolor "#000000"
+
+# Mappings
+map K zoom in
+map J zoom out
+map i recolor
+map D toggle_page_mode
+map d scroll half-down
+map u scroll half-up
+map r reload
+map R rotate
+map set statusbar-v-padding 0
+map set statusbar-h-padding 0

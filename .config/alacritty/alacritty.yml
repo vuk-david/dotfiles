@@ -1,0 +1,170 @@
+window:
+  opacity: 0.9
+  padding:
+    x: 2
+    y: 2
+  class:
+    instance: Alacritty
+    general: Alacritty
+
+scrolling:
+  history: 10000
+  multiplier: 3
+
+  #window_opacity: 1
+  #background_opacity: 0.7
+
+font:
+  normal:
+    family: monospace
+    style:  Medium
+  bold:
+    family: monospace
+    style:  Bold
+  italic:
+    family: monospace
+    style:  Italic
+  size: 8
+draw_bold_text_with_bright_colors: true
+
+colors:
+  primary:
+    background: "0x000F00"
+
+      #colors:
+      #  gruvbox_material_medium_dark: &gruvbox_material_medium_dark
+      #   GRUVBOX MATERIAL
+      #  primary:
+      #     background: '0x32302f'
+      #     foreground: '0xd4be98'
+      #  normal:
+      #    black:   '0x45403d'
+      #    red:     '0xea6962'
+      #    green:   '0xa9b665'
+      #    yellow:  '0xd8a657'
+      #    blue:    '0x7daea3'
+      #    magenta: '0xd3869b'
+      #    cyan:    '0x89b482'
+      #    white:   '0xd4be98'
+      #  bright:
+      #    black:   '0x45403d'
+      #    red:     '0xea6962'
+      #    green:   '0xa9b665'
+      #    yellow:  '0xd8a657'
+      #    blue:    '0x7daea3'
+      #    magenta: '0xd3869b'
+      #    cyan:    '0x89b482'
+      #    white:   '0xd4be98'
+
+
+
+
+
+# Colors (Ayu Dark)
+#colors:
+#  # Default colors
+#  primary:
+#    background: '0x0A0E14'
+#    foreground: '0xB3B1AD'
+#
+#  # Normal colors
+#  normal:
+#    black:   '0x01060E'
+#    red:     '0xEA6C73'
+#    green:   '0x91B362'
+#    yellow:  '0xF9AF4F'
+#    blue:    '0x53BDFA'
+#    magenta: '0xFAE994'
+#    cyan:    '0x90E1C6'
+#    white:   '0xC7C7C7'
+#
+#  # Bright colors
+#  bright:
+#    black:   '0x686868'
+#    red:     '0xF07178'
+#    green:   '0xC2D94C'
+#    yellow:  '0xFFB454'
+#    blue:    '0x59C2FF'
+#    magenta: '0xFFEE99'
+#    cyan:    '0x95E6CB'
+#    white:   '0xFFFFFF'
+
+
+
+
+# TANGO DARK
+# GNOME Terminal Tango Dark
+#colors:
+#  primary:
+#    background: '0x2e3436'
+#    foreground: '0xd3d7cf'
+#    
+#  normal:
+#    black: '0x2e3436'
+#    red: '0xcc0000'
+#    green: '0x4e9a06'
+#    yellow: '0xc4a000'
+#    blue: '0x3465a4'
+#    magenta: '0x75507b'
+#    cyan: '0x06989a'
+#    white: '0xd3d7cf'
+#
+#  bright:
+#    black: '0x555753'
+#    red: '0xef2929'
+#    green: '0x8ae234'
+#    yellow: '0xfce94f'
+#    blue: '0x729fcf'
+#    magenta: '0xad7fa8'
+#    cyan: '0x34e2e2'
+#    white: '0xeeeeec'#
+
+
+
+
+# Campbell (Windows 10 default)
+colors:
+  # Default colors
+  primary:
+    background: '0x0c0c0c'
+    foreground: '0xcccccc'
+
+  # Normal colors
+  normal:
+    black:      '0x0c0c0c'
+    red:        '0xc50f1f'
+    green:      '0x13a10e'
+    yellow:     '0xc19c00'
+    blue:       '0x0037da'
+    magenta:    '0x881798'
+    cyan:       '0x3a96dd'
+    white:      '0xcccccc'
+
+  # Bright colors
+  bright:
+    black:      '0x767676'
+    red:        '0xe74856'
+    green:      '0x16c60c'
+    yellow:     '0xf9f1a5'
+    blue:       '0x3b78ff'
+    magenta:    '0xb4009e'
+    cyan:       '0x61d6d6'
+    white:      '0xf2f2f2'
+
+
+
+log_level: None
+
+cursor:
+  style:
+    shape: Block
+    blinking: Off
+
+live_config_reload: true
+
+selection:
+  save_to_clipboard: true
+
+key_bindings:
+  - { key: Return, mods: Super|Shift, action: SpawnNewInstance }
+
