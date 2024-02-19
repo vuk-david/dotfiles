@@ -1,0 +1,16 @@
+pwd
+ls -l
+clear
+ls 
+cd Proba_Za_Eamcs/
+ls
+clear
+touch NEW
+file NEW
+touch file.txt
+touch NEW
+type nul > NEW
+echo. > new_file.txt
+write-file new_file.txt
+which ls
+which touch
