@@ -369,6 +369,35 @@ invocations will keep adding the comment mark."
     (delete-region beg end)))
 
 
+(defun vuk/increase-frame-width ()
+  "Increase the width of the frame by 5 pixels."
+  (interactive)
+  (let ((current-width (frame-width))
+        (new-width (+ (frame-width) 5)))
+    (set-frame-width nil new-width)))
+
+(defun vuk/decrease-frame-width ()
+  "Decrease the width of the frame by 5 pixels."
+  (interactive)
+  (let ((current-width (frame-width))
+        (new-width (- (frame-width) 5)))
+    (set-frame-width nil new-width)))
+
+(defun vuk/increase-frame-height ()
+  "Increase the height of the frame by 5 pixels."
+  (interactive)
+  (let ((current-height (frame-height))
+        (new-height (+ (frame-height) 5)))
+    (set-frame-height nil new-height)))
+
+(defun vuk/decrease-frame-height ()
+  "Decrease the height of the frame by 5 pixels."
+  (interactive)
+  (let ((current-height (frame-height))
+        (new-height (- (frame-height) 5)))
+    (set-frame-height nil new-height)))
+
+
 
 
 ;; ===============================================================
@@ -410,3 +439,7 @@ invocations will keep adding the comment mark."
 
 ;; My weird mappings
 (global-set-key (kbd "C-M-n") 'completion-at-point)
+(global-set-key (kbd "C-c +") 'vuk/increase-frame-width)
+(global-set-key (kbd "C-c -") 'vuk/decrease-frame-width)
+(global-set-key (kbd "C-c C-+") 'vuk/increase-frame-height)
+(global-set-key (kbd "C-c C--") 'vuk/decrease-frame-height)
