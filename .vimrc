@@ -40,6 +40,9 @@ set smarttab
 set backspace=indent,eol,start
 set ruler
 set laststatus=0 "Never have a status line
+set showmatch    "Show matching words during search
+set nobackup     "Get rid of annoying ~file
+set noesckeys    "Remove the possibility to define functions keys that start with <Esc>
 set ignorecase
 set smartcase
 set wrap
