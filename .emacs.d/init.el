@@ -158,6 +158,42 @@
 (setq-default org-time-stamp-custom-formats '("<%d.%m.%Y>" . "<%d.%m.%Y %H:%M>"))
 
 
+;; ====================================================================
+;; ============================ ORG-CAPTURE ===========================
+;; ====================================================================
+
+(setq org-capture-templates
+      '(("w" "Work Templates" entry
+	(file+headline "work.org" "Sve sto treba uraditi")
+	"* RESPONSIBILITY  %?")
+        
+        ("p" "Personal Templates" entry
+	(file+headline "personal.org" "Zanimljive ideje")
+	"* IDEA %?")
+        
+        ("d" "Demo Templates" entry
+	(file+headline "demo.org" "First heading")
+	"* %^{Please write here} %?")
+        
+        ("o" "Options in prompt" entry
+	(file+headline "demo.org" "Second heading")
+	"* %^{Select your otpion|ONE|TWO|THREE} %?")
+        
+        ("t" "Task with a <TODAY> date" entry
+	(file+headline "demo.org" "Third heading")
+	"* %^{Select your otpion|ONE|TWO|THREE}\n SCHEDULED: %t\n Some more text %?")
+
+        ("c" "Copy Template")
+        ("cp" "Submenu Copy with <TODAY> date" entry
+	(file+headline "demo.org" "Our third heading")
+	"* %^{Select your otpion|ONE|TWO|THREE}\n SCHEDULED: %t\n  %?")
+
+        ("ct" "Submenu Copy & Specify Date" entry
+	(file+headline "demo.org" "Our third heading")
+	"* %^{Select your otpion|ONE|TWO|THREE}\n SCHEDULED: %^t\n  %?")))
+
+
+
 
 ;; ==============================================================
 ;; ============================ DIRED ===========================
