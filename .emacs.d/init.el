@@ -465,6 +465,7 @@ invocations will keep adding the comment mark."
 (global-set-key (kbd "C-c w") 'vuk/toggle-writeroom-and-line-numbers)
 (global-set-key (kbd "C-c q") 'auto-fill-mode)
 (global-set-key (kbd "C-c v") 'display-fill-column-indicator-mode)
+(global-set-key (kbd "C-c c") 'org-capture)
 
 ;; Highlighting
 (global-set-key (kbd "C-c h") 'vuk/select-inner-word)
@@ -482,3 +483,4 @@ invocations will keep adding the comment mark."
 
 ;; For Editing purposes
 (global-set-key (kbd "C-M-p") 'backward-list)
+(global-set-key (kbd "C-;") 'comment-dwim)
