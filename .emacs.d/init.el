@@ -443,3 +443,6 @@ invocations will keep adding the comment mark."
 (global-set-key (kbd "C-c -") 'vuk/decrease-frame-width)
 (global-set-key (kbd "C-c C-+") 'vuk/increase-frame-height)
 (global-set-key (kbd "C-c C--") 'vuk/decrease-frame-height)
+
+;; For Editing purposes
+(global-set-key (kbd "C-M-p") 'backward-list)
