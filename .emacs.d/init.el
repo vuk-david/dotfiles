@@ -139,6 +139,9 @@
 ;; ============================ ORG-MODE ===========================
 ;; =================================================================
 
+;; Hide special character that are needed for: bold, italic, etc.
+(setq org-hide-emphasis-markers t)
+
 ;; Display inline images
 (setq org-startup-with-inline-images t)
 
