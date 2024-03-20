@@ -160,6 +160,10 @@
 (setq-default org-display-custom-times t)
 (setq-default org-time-stamp-custom-formats '("<%d.%m.%Y>" . "<%d.%m.%Y %H:%M>"))
 
+;; Don't ask me "Evaluate this emacs-lisp code block on your system? (yes or no)"
+;; when exporting to .html from .org
+(setq org-confirm-babel-evaluate nil)
+
 
 ;; ====================================================================
 ;; ============================ ORG-CAPTURE ===========================
