@@ -165,6 +165,56 @@
 (setq org-confirm-babel-evaluate nil)
 
 
+(setq-default org-display-custom-times t)
+(setq org-time-stamp-custom-formats '("<%e-%b-%Y>" . "<%e-%b-%Y %H:%M>"))
+
+(setq org-confirm-babel-evaluate nil)
+
+;; Presentation mode
+(use-package darkroom
+  :ensure t
+  :custom
+  (darkroom-text-scale-increase 0))
+
+(use-package org-bullets
+  :ensure t
+  after org)
+
+(use-package org-tree-slided
+  :ensure t
+  :after (org darkroom)
+  :custom
+  (org-tree-slide-breadcrumbs nil)
+  (org-tree-slide-header nil)
+  (org-tree-slide-slided-in-effect nil)
+  (org-tree-slide-heading-emphasis nil)
+  (org-tree-slide-cursor-init t)
+  (org-tree-slide-modeline-display nil)
+  (org-tree-slide-skip-done nil)
+  (org-tree-slide-skip-comments t)
+  (org-tree-slide-fold-subtrees-skipped t)
+  (org-tree-slide-skip-outline-level 8)
+  (org-tree-slide-never-touch-face t)
+  :config
+  (defun vuk/org-presentation()
+    "Specifies conditions that should apply locally upon
+     activation of 'org-tree-slide-mode'."
+    (if (eq darktoom-tentative-mode nil)
+	(progn
+	  (darkroom-tentate-move 1)
+	  (org-bullets mode1)
+	  (org-indent-mode 1)
+	  (setq cursor-type '(bar . 1)))
+      (darkroom-tentateive-mode -1)
+      (org-bullets-mode -1)
+      (org-indents-mode -1)
+      (setq cursor-type 'box))
+    :bind (("<f9>" . org-tree-slide-mode)
+	   :map org-tree-slide-mode-map
+	   ("<C-right>" . org-tree-slide-move-next-tree)
+	   ("<C-left>" . org-tree-slide-move-previous-tree)
+    :hook(org-tree-slide-mode . vuk/org-presentation))
+
 ;; ====================================================================
 ;; ============================ ORG-CAPTURE ===========================
 ;; ====================================================================
