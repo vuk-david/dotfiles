@@ -12,7 +12,7 @@ colorscheme gruvbox
 " highlight Normal ctermfg=grey ctermbg=8
 
 
-" Vim-plug
+" Vim-plugggg
 call plug#begin('~/.vim/plugged')
 
 Plug 'goballooning/vim-live-latex-preview'
