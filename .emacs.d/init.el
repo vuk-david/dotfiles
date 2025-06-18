@@ -1,6 +1,122 @@
-;; ========================================================================
-;; ========================== EMACS CONFIGURATION FILE ====================
-;; ========================================================================
+;; Default size upon opening Emacs(i.e. centered)
+(setq initial-frame-alist
+      '((top . 200) (left . 350) (width . 85) (height . 30)))
+
+;; Disable Welcome-startup-screen
+(setq inhibit-startup-screen t)
+
+;; Disable these
+(menu-bar-mode -1)
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
+
+;; Set font
+(set-frame-font "Iosevka Comfy 10" nil t)
+
+;; ;; Print all Family-fonts line-by-line:
+;; (with-current-buffer (get-buffer-create "*Font List*")
+;;   (erase-buffer)
+;;   (dolist (font (font-family-list))
+;;     (insert font "\n"))
+;;  (switch-to-buffer (current-buffer)))
+
+;; Theme
+(load-theme 'dracula t)
+
+;; Stop blinking of cursor
+(blink-cursor-mode 0)
+
+; Turn off the ring bell
+(setq ring-bell-function 'ignore)
+
+
+;; Elpa and Melpa
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(add-to-list 'package-archives '("elpa" . "https://elpa.gnu.org/packages/") t)
+(package-initialize)
+
+
+;; Nemam pojma sta je ovo
+;; Refresh package contents if not already done
+(unless package-archive-contents
+  (package-refresh-contents)) ;; M-x package-refresh-contents
+
+
+;; ******************
+;; *** MINIBUFFER ***
+;; ******************
+
+;; Horizontal options
+(vertico-mode 1)
+
+;; Details
+(marginalia-mode 1)
+
+
+;; Delete the previous path when inserting new ~/A/B/C~/. ==> ~/.
+(file-name-shadow-mode 1)
+(add-hook 'rfn-eshadow-update-overlay-hook #'vertico-directory-tidy)
+
+
+;; *************
+;; *** DIRED ***
+;; *************
+
+(setq dired-listing-switches "-AlX --group-directories-first")
+
+;; Hide drwxrwxrwx...
+(add-hook 'dired-mode-hook 'dired-hide-details-mode)
+
+;; Prevent pernament deletion
+(setq delete-by-moving-to-trash t)
+(setq dired-dwim-target t)
+
+;; fontify code in code blocks
+(setq org-src-fontify-natively t)
+
+;; Color background
+;;(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+;; '(org-block ((t (:background "#1c1f26")))))
+
+;; (custom-set-faces
+;; '(org-quote ((t (:background "#1c1f26" :foreground "#f8f8f2" :slant italic)))))
+(setq org-fontify-quote-and-verse-blocks t)
+
+(custom-set-faces
+ '(org-block ((t (:background "#1c1f26"))))
+ '(org-quote ((t (:background "#1c1f26" :foreground "#ffa500" :slant italic)))))
+
+;; '(org-meta-line ((t (:background "#808080" :foreground "#000000"))))
+
+;; (set-face-attribute 'org-block nil :background "#1e1f29")
+;; (set-face-attribute 'org-quote nil :background "#21222c" :foreground "#f8f8f2" :slant 'italic)
+
+
+;; (set-face-attribute 'org-latex-and-related nil :background "#21222c" :foreground "#f8f8f2")
+
+
+;; Ne znam sta je, a ni da li radi
+(setq org-src-tab-acts-natively t)
+
+;; Change the display of Date-and-Time
+(setq-default org-display-custom-times t)
+(setq org-time-stamp-custom-formats '("<%Y-%b-%d>" . "<%d. %b %Y. %H:%M>"))
+
+		    
+
+
+
+
+;; (setq user-emacs-directory "C:/Users/cevu/Desktop/Alat/Anti_Filozof/Emacs")
+
+;; =====================================================================
+;; =======================  Measure Startup Time =======================
+;; =====================================================================
 
 ;; Use a hook so the message doesn't get clobbered by other messages.
 (add-hook 'emacs-startup-hook
@@ -11,334 +127,95 @@
                               (time-subtract after-init-time before-init-time)))
                      gcs-done)))
 
-
-;;(setq mode-line-format nil)
-
-;; ---------------------------------------------------------------------
-;; --------------------------- SOME DEFAULTS ---------------------------
-;; ---------------------------------------------------------------------
-
-;; Kill Welcome-startup-screen
-(setq inhibit-startup-screen t)
-
-;; Custom Default path
-;; (setq default-directory "C:/Users/krete/Desktop/Alat/Anti_filozof/Computers/Emacs/")
-
-;; Set font
-(set-frame-font "Iosevka Comfy Fixed 10" nil t)
-;; (set-default-font "Iosevka Comfy Fixed 10" t)
-;; (set-face-attribute 'default nil :font "Iosevka Comfy Fixed 10")
-
-
-;; <TAB> = 4 <SPC>
-;; Set tab width and enable indent-tabs-mode
-(setq-default indent-tabs-mode nil)
-(setq-default tab-width 4)
-
-;; When "autofill" is on, hard-wrap at 79 characters
-(setq-default fill-column 79)
-
-;; Stop blinking of cursor
-(blink-cursor-mode 0)
-
-; Turn off the ring bell
-(setq ring-bell-function 'ignore)
-
-;; relativenumber, number
-;;(setq display-line-numbers-type 'relative)
-;;(global-display-line-numbers-mode t)
+;; ===================================================================
+;; =========================== FUNCTIONALITY =========================
+;; ===================================================================
 
 ;; Prevents the screen to move up by half the screen when I'm down
 (setq scroll-conservatively 101
       scroll-margin 0
       scroll-step 1)
 
-
-;; ===================================================================
-;; ============================ APPEARANCE ===========================
-;; ===================================================================
-
-;; Disable the menu bar
-(menu-bar-mode -1)
-
-;; Disable menu items
-(tool-bar-mode -1)
-(scroll-bar-mode -1)
-
-;; Get rid of the "- + X" around the frame
-(setq default-frame-alist '((undecorated . t)))
-
-;; Default size upon opening Emacs
-(setq initial-frame-alist
-      '((top . 200) (left . 350) (width . 85) (height . 30)))
-
-
-
-;; =================================================================
-;; ------------------------- AUTOMATIC -----------------------------
-;; =================================================================
-;; Ovo se automatski dodalo od strane Emacs Configuration fajla
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(calendar-date-style 'european)
- '(org-agenda-files
-   '("c:/Users/krete/Desktop/Alat/Anti_filozof/Computers/Emacs/izbegavanje.org"))
- '(org-safe-remote-resources
-   '("\\`https://fniessen\\.github\\.io/org-html-themes/org/theme-readtheorg\\.setup\\'"))
- '(package-selected-packages
-   '(aggressive-indent dired-preview emoji-display all-the-icons-completion all-the-icons-ibuffer all-the-icons epkg-marginalia marginalia vertico image-dired+ evil timu-spacegrey-theme writeroom-mode))
- '(visible-bell nil))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
-;; =================================================================
-
-
-
-
-;; -----------------------------------------------------------------
-;; ---------------------------- MELPA ------------------------------
-;; -----------------------------------------------------------------
-
-
-(require 'package)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-(package-initialize)
-
-;; ----------------------------------------------------------------
-;; ---------------------------- ELPA ------------------------------
-;; ----------------------------------------------------------------
-(add-to-list 'package-archives '("elpa" . "https://elpa.gnu.org/packages/") t)
-
-
-;; Theme
-(load-theme 'dracula t)
-
-;; vertico (For mini-buffer)
-(vertico-mode 1)
-
-;; it will show a brief description of the command as well
-;; as the keybinding associated with it (if any).
-(marginalia-mode -1)
-
-;; Delete the previous path when inserting new ~/A/B/C~/. ==> ~/.
-(file-name-shadow-mode 1)
-(add-hook 'rfn-eshadow-update-overlay-hook #'vertico-directory-tidy)
-
-;; Delete by moving to trash
-(setq delete-by-moving-to-trash t)
+;; When "autofill" is on, hard-wrap at 79 characters
+(setq-default fill-column 79)
 
 
 ;; =================================================================
 ;; ============================ ORG-MODE ===========================
 ;; =================================================================
 
-;; Hide special character that are needed for: bold, italic, etc.
-(setq org-hide-emphasis-markers t)
+(with-eval-after-load 'org
+  (define-key org-mode-map (kbd "C-c e m") (lambda () (interactive) (insert "—"))))
 
-;; Display inline images
-(setq org-startup-with-inline-images t)
 
-(require 'org-mouse)
+
+(add-hook 'org-mode-hook (lambda () (require 'ox-odt)))
+
+;; (add-hook 'org-mode-hook
+;;           (lambda ()
+;;             (auto-fill-mode 1)
+;;             (display-fill-column-indicator-mode 1)))
+
+
+(defun my-org-mode-setup ()
+  "Custom setup for Org mode."
+  (auto-fill-mode 1)
+  (display-fill-column-indicator-mode 1))
+
+(add-hook 'org-mode-hook 'my-org-mode-setup)
+
+;; Disable confirmation prompt for evaluating code
+(setq org-confirm-babel-evaluate nil)
+
+;; Enable Emacs Lisp
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)))
+
+(setq org-emphasis-multiline t)
+
+
+
+;; Hide special character that are needed for: *bold*, /italic/, etc.
+;; (setq org-hide-emphasis-markers t)
+(setq org-hide-emphasis-markers nil)
+
+;; Don't create backup files
 (setq make-backup-files nil)
 
-;; Multiple keyword sets in one file
-(setq org-todo-keywords '((sequence "TODO" "CHECK" "FIX" "WAITING" "READ" "IDEA"
-                                     "TIDY" "|" "DONE" "CANCELLED")))
+;; (use-package darkroom
+;;   :ensure t
+;;   :custom
+;;   (darkroom-text-scale-increase 0))
 
-;; The way the Dates are being displayed
-;; You can also run: M-x calendar-set-date-style
-(set calendar-date-style 'european)
-
- ;; Display time as "21-11-2023 13:45" instead of "<2023-11-21 Mon 13:45>"'
-(setq-default org-display-custom-times t)
-(setq-default org-time-stamp-custom-formats '("<%d.%m.%Y>" . "<%d.%m.%Y %H:%M>"))
-
-;; Don't ask me "Evaluate this emacs-lisp code block on your system? (yes or no)"
-;; when exporting to .html from .org
-(setq org-confirm-babel-evaluate nil)
+;; (use-package org-bullets
+;;   :ensure t
+;;   after org)
 
 
-(setq-default org-display-custom-times t)
-(setq org-time-stamp-custom-formats '("<%e-%b-%Y>" . "<%e-%b-%Y %H:%M>"))
 
-(setq org-confirm-babel-evaluate nil)
+;; Ugraaadjdivanje slika u .org fajl direktno iz path-a
+(defun encode-images-on-save ()
+  "Automatically replace image references with Base64 data URLs in the current Org buffer."
+  (save-excursion
+    (goto-char (point-min))
+    (while (re-search-forward "\\[\\[\\(file:\\|\\.\\)/\\([^\]]+\\)\\]\\]" nil t)
+      (let* ((image-path (match-string 2))
+             (full-path (expand-file-name image-path))
+             (base64-img (format "<img src=\"data:image/png;base64,%s\">"
+                                 (tob64 full-path))))
+        (replace-match base64-img t t)))))
 
-;; Presentation mode
-(use-package darkroom
-  :ensure t
-  :custom
-  (darkroom-text-scale-increase 0))
-
-(use-package org-bullets
-  :ensure t
-  after org)
-
-(use-package org-tree-slided
-  :ensure t
-  :after (org darkroom)
-  :custom
-  (org-tree-slide-breadcrumbs nil)
-  (org-tree-slide-header nil)
-  (org-tree-slide-slided-in-effect nil)
-  (org-tree-slide-heading-emphasis nil)
-  (org-tree-slide-cursor-init t)
-  (org-tree-slide-modeline-display nil)
-  (org-tree-slide-skip-done nil)
-  (org-tree-slide-skip-comments t)
-  (org-tree-slide-fold-subtrees-skipped t)
-  (org-tree-slide-skip-outline-level 8)
-  (org-tree-slide-never-touch-face t)
-  :config
-  (defun vuk/org-presentation()
-    "Specifies conditions that should apply locally upon
-     activation of 'org-tree-slide-mode'."
-    (if (eq darktoom-tentative-mode nil)
-	(progn
-	  (darkroom-tentate-move 1)
-	  (org-bullets mode1)
-	  (org-indent-mode 1)
-	  (setq cursor-type '(bar . 1)))
-      (darkroom-tentateive-mode -1)
-      (org-bullets-mode -1)
-      (org-indents-mode -1)
-      (setq cursor-type 'box))
-    :bind (("<f9>" . org-tree-slide-mode)
-	   :map org-tree-slide-mode-map
-	   ("<C-right>" . org-tree-slide-move-next-tree)
-	   ("<C-left>" . org-tree-slide-move-previous-tree)
-    :hook(org-tree-slide-mode . vuk/org-presentation))
-
-;; ====================================================================
-;; ============================ ORG-CAPTURE ===========================
-;; ====================================================================
-
-(setq org-capture-templates
-      '(("w" "Work Templates" entry
-	(file+headline "work.org" "Sve sto treba uraditi")
-	"* RESPONSIBILITY  %?")
-        
-        ("p" "Personal Templates" entry
-	(file+headline "personal.org" "Zanimljive ideje")
-	"* IDEA %?")
-        
-        ("d" "Demo Templates" entry
-	(file+headline "demo.org" "First heading")
-	"* %^{Please write here} %?")
-        
-        ("o" "Options in prompt" entry
-	(file+headline "demo.org" "Second heading")
-	"* %^{Select your otpion|ONE|TWO|THREE} %?")
-        
-        ("t" "Task with a <TODAY> date" entry
-	(file+headline "demo.org" "Third heading")
-	"* %^{Select your otpion|ONE|TWO|THREE}\n SCHEDULED: %t\n Some more text %?")
-
-        ("c" "Copy Template")
-        ("cp" "Submenu Copy with <TODAY> date" entry
-	(file+headline "demo.org" "Our third heading")
-	"* %^{Select your otpion|ONE|TWO|THREE}\n SCHEDULED: %t\n  %?")
-
-        ("ct" "Submenu Copy & Specify Date" entry
-	(file+headline "demo.org" "Our third heading")
-	"* %^{Select your otpion|ONE|TWO|THREE}\n SCHEDULED: %^t\n  %?")))
+(add-hook 'org-mode-hook
+          (lambda ()
+            (add-hook 'before-save-hook #'encode-images-on-save nil t)))
 
 
 
 
-;; ==============================================================
-;; ============================ DIRED ===========================
-;; ==============================================================
-
-;; So the the Icons are rendering in Dired
-;; (load "~/all-the-icons-dired.el")
-
-;; ls -1 instead of ls -l in DIRED
-(setq delete-by-moving-to-trash t)
-
-(setq dired-listing-switches "-hX  --group-directories-first")
-
-(require 'dired-preview)
-
-;; Default values for demo purposes
-(setq dired-preview-delay 0.7)
-(setq dired-preview-max-size (expt 2 20))
-(setq dired-preview-ignored-extensions-regexp
-      (concat "\\."
-              "\\(mkv\\|webm\\|mp4\\|mp3\\|ogg\\|m4a"
-              "\\|gz\\|zst\\|tar\\|xz\\|rar\\|zip"
-              "\\|iso\\|epub\\|pdf\\)"))
-
-;; Enable `dired-preview-mode' in a given Dired buffer or do it
-;; globally:
-(dired-preview-global-mode 1)
-
-
-;; ==============================================================
-;; ============================ HOOKS ===========================
-;; ==============================================================
-(add-hook 'dired-mode-hook 'dired-hide-details-mode)
-(add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
-
-
-;; ==============================================================
-;; =========================== MODELINE =========================
-;; ==============================================================
-
-(setq-default mode-line-format
-              '("%e"
-                my-modeline-buffer-name
-                "  "
-                my-modeline-major-mode))
 
 
 
-;; "faces" are eseentially a way to specify or customize appearance of
-;; text and other elements in Emacs
-(defface my-modeline-background
-  '((t :background "#3355bb" :foreground "white" :inherit bold))
-  "Face with a red background for use on the mode line.")
-
-
-(defun my-modeline--buffer-name ()
-  "Return `buffer-name' with spaces around it."
-  (format " %s " (buffer-name)))
-
-(defvar-local my-modeline-buffer-name
-    '(:eval
-      (when (mode-line-window-selected-p)
-        (propertize (my-modeline--buffer-name) 'face 'my-modeline-background)))
-  "Mode line construct to display the buffer name.")
-
-(put 'my-modeline-buffer-name 'risky-local-variable t)
-
-(defun my-modeline--major-mode-name ()
-  "Return capitalized `major-mode' as a string."
-  (capitalize (symbol-name major-mode)))
-
-(defvar-local my-modeline-major-mode
-    '(:eval
-        (list
-         (propertize "🦄" 'face 'shadow)
-         " "
-         (propertize (my-modeline--major-mode-name) 'face 'bold)))
-  "Mode line construct to display the major mode.")
-
-(put 'my-modeline-major-mode 'risky-local-variable t)
-
-
-
-;; ============================================================
-;; ============================ VIM ===========================
-;; ============================================================
-;; (require 'evil)
-;; (evil-mode 1)
 
 
 
@@ -380,86 +257,11 @@ beginning of the line. This will not remove the line."
   (interactive)
   (kill-line 0))
 
-
 (defun vuk/copy-eol ()
   "Copies from the pointer to the end of line."
   (interactive)
   (kill-ring-save (point) (point-at-eol))
   (message "Current line copied"))
-
-
-(defun vuk/comment-eol ()
-  "Comments out the line from the position of the points to the
-end. The behaviour is not a toggle, meaning that subsequent
-invocations will keep adding the comment mark."
-  (interactive)
-  (comment-region (point) (point-at-eol)))
-
-
-(defun vuk/insert-80-dashes ()
-  (interactive)
-  (insert (make-string 80 ?-)))
-
-
-(defun vuk/toggle-writeroom-and-line-numbers ()
-  "Toggles writeroom-mode and line numbers."
-  (interactive)
-  ;;(vuk/toggle-line-numbers)
-  (if (bound-and-true-p writeroom-mode)
-      (writeroom-mode -1)
-    (writeroom-mode 1)))
-
-
-(defun vuk/select-inner-word ()
-  "Select the whole word at point, regardless of cursor position within it."
-  (interactive)
-  (let ((beg (save-excursion (backward-word) (point)))
-        (end (save-excursion (forward-word) (point))))
-    (set-mark beg)
-    (goto-char end)
-    (activate-mark)))
-
-
-(defun vuk/select-inner-sentence ()
-  "Select the sentence at point."
-  (interactive)
-  (let ((beg (save-excursion
-               (re-search-backward "[.!?\n$]" nil t)
-               (forward-char 2)
-               (point)))  ;; return current_cursor_position
-        (end (save-excursion
-               (re-search-forward "[.!?]" nil t)
-               ;;(backward-char)
-               (point)))) ;; return current_cursor_position
-    (set-mark beg)
-    (goto-char end)
-    (activate-mark)))
-
-
-(defun vuk/delete-inner-sentence ()
-  "Select the sentence at point."
-  (interactive)
-  (let ((beg (save-excursion
-               (re-search-backward "[.!?\n$]" nil t)
-               (forward-char 2)
-               (point)))  ;; return current_cursor_position
-        (end (save-excursion
-               (re-search-forward "[.!?]" nil t)
-               (forward-char)
-               (point)))) ;; return current_cursor_position
-               (delete-region beg end)))
-
-(defun vuk/delete-inner-word ()
-  "Deletes entire word from anywhere within the word."
-  (interactive)
-  (let ((beg (save-excursion
-               (re-search-backward "\\b" nil t)
-               (point)))
-        (end (save-excursion
-               (re-search-forward "\\b" nil t)
-               (forward-char)
-               (point))))
-    (delete-region beg end)))
 
 
 (defun vuk/increase-frame-width ()
@@ -492,7 +294,6 @@ invocations will keep adding the comment mark."
 
 
 
-
 ;; ===============================================================
 ;; ======================== MY KEYBINDINGS =======================
 ;; ===============================================================
@@ -503,6 +304,7 @@ invocations will keep adding the comment mark."
 ;; Set keybindings for scrolling
 (global-set-key (kbd "C-v") 'View-scroll-half-page-forward)
 (global-set-key (kbd "M-v") 'View-scroll-half-page-backward)
+
 ;; Now I can go half page Up and Down with: C-v and M-v respectively.
 (autoload 'View-scroll-half-page-forward "view")
 (autoload 'View-scroll-half-page-backward "view")
@@ -512,32 +314,33 @@ invocations will keep adding the comment mark."
 (global-set-key (kbd "C-S-p") 'vuk/multi-line-prev)
 (global-set-key (kbd "C-S-k") 'vuk/kill-line-backward)
 
-;; Additional Functionalities
-(global-set-key (kbd "C-c y") 'vuk/copy-eol)
-(global-set-key (kbd "C-c g") 'insert-80-dashes)
-
 ;; Toggles
 (global-set-key (kbd "C-c l") 'vuk/toggle-line-numbers)
 (global-set-key (kbd "C-c i") 'vuk/toggle-whitespace)
-(global-set-key (kbd "C-c w") 'vuk/toggle-writeroom-and-line-numbers)
 (global-set-key (kbd "C-c q") 'auto-fill-mode)
 (global-set-key (kbd "C-c v") 'display-fill-column-indicator-mode)
 (global-set-key (kbd "C-c c") 'org-capture)
+(global-set-key (kbd "C-c a") 'org-agenda)
 
-;; Highlighting
-(global-set-key (kbd "C-c h") 'vuk/select-inner-word)
-(global-set-key (kbd "C-c s") 'vuk/select-inner-sentence)
-(global-set-key (kbd "C-c d") 'vuk/delete-inner-sentence)
-(global-set-key (kbd "C-c r") 'vuk/delete-inner-word)
-(put 'narrow-to-region 'disabled nil)
 
-;; My weird mappings
-(global-set-key (kbd "C-M-n") 'completion-at-point)
+
+
+(global-set-key (kbd "C-c y") 'vuk/copy-eol)
+
+;; Additional Functionalities
 (global-set-key (kbd "C-c +") 'vuk/increase-frame-width)
 (global-set-key (kbd "C-c -") 'vuk/decrease-frame-width)
 (global-set-key (kbd "C-c C-+") 'vuk/increase-frame-height)
 (global-set-key (kbd "C-c C--") 'vuk/decrease-frame-height)
 
-;; For Editing purposes
-(global-set-key (kbd "C-M-p") 'backward-list)
-(global-set-key (kbd "C-;") 'comment-dwim)
+;; For Searching
+(global-set-key (kbd "M-u") 'isearch-exit)
+;; (define-key global-map (kbd "M-.") 'isearch-repeat-forward)
+;; (define-key global-map (kbd "M-,") 'isearch-repeat-backward)
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(org-safe-remote-resources
+   '("\\`https://fniessen\\.github\\.io/org-html-themes/org/theme-readtheorg\\.setup\\'")))
