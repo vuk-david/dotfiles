@@ -1,0 +1,261 @@
+From - Mon Oct 31 07:09:19 2022
+X-Account-Key: account4
+X-UIDL: 00007a6d4f854117
+X-Mozilla-Status: 0001
+X-Mozilla-Status2: 00000000
+X-Mozilla-Keys:                                                                                 
+Return-Path: <monikarusch@monikarusch.com>
+Delivered-To: pavle.vuletic@kondor.etf.rs
+Received: from mx1.etf.bg.ac.rs (mx4.etf.rs [147.91.14.231])
+	by kondor.etf.rs (Postfix) with ESMTP id B28324A2428
+	for <pavle.vuletic@kondor.etf.rs>; Sun, 30 Oct 2022 23:39:37 +0100 (CET)
+Received: by mx1.etf.bg.ac.rs (Postfix)
+	id AACE163027; Sun, 30 Oct 2022 23:39:37 +0100 (CET)
+Delivered-To: pavle.vuletic@etf.bg.ac.rs
+Received: from mx3.etf.bg.ac.rs (mx3.etf.rs [147.91.14.229])
+	(using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by mx1.etf.bg.ac.rs (Postfix) with ESMTPS id A876C63026
+	for <pavle.vuletic@etf.bg.ac.rs>; Sun, 30 Oct 2022 23:39:37 +0100 (CET)
+Received: from mx3.etf.bg.ac.rs (localhost.localdomain [127.0.0.1])
+	by mx3.etf.bg.ac.rs (Proxmox) with ESMTP id A7267282DC
+	for <pavle.vuletic@etf.bg.ac.rs>; Sun, 30 Oct 2022 23:39:37 +0100 (CET)
+Received-SPF: pass (monikarusch.com: 84.246.210.252 is authorized to use 'monikarusch@monikarusch.com' in 'mfrom' identity (mechanism 'a:mail.monikarusch.com' matched)) receiver=mx3.etf.bg.ac.rs; identity=mailfrom; envelope-from="monikarusch@monikarusch.com"; helo=empresas.namastech.servidoresdedicados.com; client-ip=84.246.210.252
+Received: from empresas.namastech.servidoresdedicados.com (empresas.namastech.servidoresdedicados.com [84.246.210.252])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by mx3.etf.bg.ac.rs (Proxmox) with ESMTPS id AE8C427880
+	for <pavle.vuletic@etf.bg.ac.rs>; Sun, 30 Oct 2022 23:39:35 +0100 (CET)
+Received: by empresas.namastech.servidoresdedicados.com (Postfix, from userid 10034)
+	id 56AF91E4EF6; Sun, 30 Oct 2022 23:39:28 +0100 (CET)
+To: pavle.vuletic@etf.bg.ac.rs
+Subject: USPS expects to deliver your package today by 8:00pm.
+MIME-Version: 1.0
+Content-type: text/html; charset=UTF-8
+From: Delivery Failed SHIP9867587685 <noreply@yourwpsite.email>
+Message-Id: <20221030223928.56AF91E4EF6@empresas.namastech.servidoresdedicados.com>
+Date: Sun, 30 Oct 2022 23:39:28 +0100 (CET)
+X-SPAM-LEVEL: Spam detection results:  0
+	BAYES_00                 -1.9 Bayes spam probability is 0 to 1%
+	HEADER_FROM_DIFFERENT_DOMAINS  0.249 From and EnvelopeFrom 2nd level mail domains are different
+	HTML_IMAGE_RATIO_02     0.001 HTML has a low ratio of text to image area
+	HTML_MESSAGE            0.001 HTML included in message
+	KAM_DMARC_STATUS         0.01 Test Rule for DKIM or SPF Failure with Strict Alignment
+	KAM_SHORT               0.001 Use of a URL Shortener for very short URL
+	LOTS_OF_MONEY           0.001 Huge... sums of money
+	MIME_HTML_ONLY            0.1 Message only has text/html MIME parts
+	SPF_HELO_PASS          -0.001 SPF: HELO matches SPF record
+	SPF_PASS               -0.001 SPF: sender matches SPF record
+	URIBL_SBL_A               0.1 Contains URL's A record listed in the Spamhaus SBL blocklist [s.id]
+
+
+<!-- 
+ Here we go some texte here to fuck security d75127c67ff0de9ed510e3c8643121b2 
+ what do you think about it110f08d5c3133981366b5c53ace53241
+ --><!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title></title>
+</head>
+<body>
+<table class="37e6744c6f69e3057384de140e3c28d6templateContainer"
+ style="border: 0px none ; background-color: rgb(250, 250, 250); border-collapse: collapse; color: rgb(0, 0, 0); font-family: &quot;ys text&quot;,arial,sans-serif; font-size: 16px; font-style: normal; font-weight: 400; text-transform: none; white-space: normal; word-spacing: 0px; max-width: 600px ! important;"
+ border="0" cellpadding="0" cellspacing="0"
+ width="100%">
+  <tbody>
+    <tr
+ style="color: rgb(0, 0, 0); font-family: &quot;ys text&quot;,arial,sans-serif; font-size: 16px; font-style: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; background-color: rgb(250, 250, 250);">
+      <td id="8fa3fcdf18137ad303a3f88b426bab8templatePreheader"
+ style="border-bottom-style: none; border-bottom-width: 0px; border-top-style: none; border-top-width: 0px; padding-bottom: 9px; padding-top: 9px;"
+ valign="top">
+      <table class="bab1e528b47b5eb46a523f61f59ac5ddmcnTextBlock"
+ style="border-collapse: collapse; min-width: 100%;" border="0"
+ cellpadding="0" cellspacing="0" width="100%">
+        <tbody
+ class="db906503bff25f051730bd307a1897aamcnTextBlockOuter">
+          <tr>
+            <td
+ class="8a4f2d5e8eaa755d62ea21accb2507fdmcnTextBlockInner"
+ style="padding-top: 9px;" valign="top">
+            <table
+ class="9a7aaaf2813012735b7ee92f8bcef576mcnTextContentContainer"
+ style="border-collapse: collapse; max-width: 390px;"
+ align="left" border="0" cellpadding="0"
+ cellspacing="0" width="100%">
+              <tbody>
+                <tr>
+                </tr>
+              </tbody>
+            </table>
+            <table
+ class="9a7aaaf2813012735b7ee92f8bcef576mcnTextContentContainer"
+ style="border-collapse: collapse; max-width: 210px;"
+ align="left" border="0" cellpadding="0"
+ cellspacing="0" width="100%">
+              <tbody>
+                <tr>
+                </tr>
+              </tbody>
+            </table>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </td>
+    </tr>
+    <tr
+ style="color: rgb(0, 0, 0); font-family: &quot;ys text&quot;,arial,sans-serif; font-size: 16px; font-style: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; background-color: rgb(250, 250, 250);">
+      <td id="f40c9d9a6b8098ae7129be87bd1bdcdtemplateHeader"
+ style="border-bottom-style: none; border-bottom-width: 0px; border-top-style: none; border-top-width: 0px; padding-bottom: 0px; padding-top: 9px;"
+ valign="top">
+      <table class="bab1e528b47b5eb46a523f61f59ac5ddmcnTextBlock"
+ style="border-collapse: collapse; min-width: 100%;" border="0"
+ cellpadding="0" cellspacing="0" width="100%">
+        <tbody
+ class="db906503bff25f051730bd307a1897aamcnTextBlockOuter">
+          <tr>
+            <td
+ class="8a4f2d5e8eaa755d62ea21accb2507fdmcnTextBlockInner"
+ style="padding-top: 9px;" valign="top">
+            <table
+ class="9a7aaaf2813012735b7ee92f8bcef576mcnTextContentContainer"
+ style="border-collapse: collapse; max-width: 100%; min-width: 100%;"
+ align="left" border="0" cellpadding="0"
+ cellspacing="0" width="100%">
+              <tbody>
+                <tr>
+                  <td
+ class="57883fdb252423c5faee073fe9c3ada5mcnTextContent"
+ style="padding: 0px 2px; color: rgb(249, 0, 28); font-family: &quot;courier new&quot;,courier,&quot;lucida sans typewriter&quot;,&quot;lucida typewriter&quot;,monospace; font-size: 48px; font-style: normal; font-weight: bold; line-height: 72px; text-align: left;"
+ valign="top"><img
+ src="https://resize.yandex.net/mailservice?url=https%3A%2F%2Fwww.usps.com%2Fglobal-elements%2Fheader%2Fimages%2Futility-header%2Flogo-sb.svg&amp;proxy=yes&amp;key=568019fa8305181f63dea5f750465f7e"
+ style="border: 0px none ; text-decoration: none; height: auto ! important;"
+ height="300" width="300">
+                  <hr></td>
+                </tr>
+              </tbody>
+            </table>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </td>
+    </tr>
+    <tr
+ style="color: rgb(0, 0, 0); font-family: &quot;ys text&quot;,arial,sans-serif; font-size: 16px; font-style: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; background-color: rgb(250, 250, 250);">
+      <td id="7ec7dc0ee9f121fb547c67924d0eacctemplateBody"
+ style="border-bottom: 2px solid rgb(234, 234, 234); border-top-style: none; border-top-width: 0px; padding-bottom: 9px; padding-top: 0px;"
+ valign="top">
+      <table class="bab1e528b47b5eb46a523f61f59ac5ddmcnTextBlock"
+ style="border-collapse: collapse; min-width: 100%;" border="0"
+ cellpadding="0" cellspacing="0" width="100%">
+        <tbody
+ class="db906503bff25f051730bd307a1897aamcnTextBlockOuter">
+          <tr>
+            <td
+ class="8a4f2d5e8eaa755d62ea21accb2507fdmcnTextBlockInner"
+ style="padding-top: 9px;" valign="top">
+            <table
+ class="9a7aaaf2813012735b7ee92f8bcef576mcnTextContentContainer"
+ style="border-collapse: collapse; max-width: 100%; min-width: 100%;"
+ align="left" border="0" cellpadding="0"
+ cellspacing="0" width="100%">
+              <tbody>
+                <tr>
+                  <td
+ class="57883fdb252423c5faee073fe9c3ada5mcnTextContent"
+ style="padding: 0pt 18px 9px; color: rgb(32, 32, 32); font-family: helvetica; font-size: 16px; line-height: 24px; text-align: left;"
+ valign="top">
+                  <p
+ style="margin: 10px 0px; padding: 0px; color: rgb(32, 32, 32); font-family: helvetica; font-size: 16px; line-height: 24px; text-align: left;">Dear
+Customer</p>
+                  <br>
+USPS inform you that Your shipment N&deg; US<span
+ class="1f1ea193f6735cf0wmi-callto"><span
+ class="wmi-callto">9514901185421</span></span>&nbsp;is
+still waiting for instructions from you.<br>
+                  <hr>Fees to pay : 0.99 $.<br>
+Date : 30/10/2022.
+                  <hr><br>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <table class="4ea8cc431b707a5fbc1b4de73fff6c90mcnButtonBlock"
+ style="border-collapse: collapse; min-width: 100%;" border="0"
+ cellpadding="0" cellspacing="0" width="100%">
+        <tbody
+ class="b4f360e92686396ac8ee00946ea17731mcnButtonBlockOuter">
+          <tr>
+            <td
+ class="a34caaa59706e11b9fb25658365b546emcnButtonBlockInner"
+ style="padding: 0pt 18px 18px;" align="center"
+ valign="top">
+            <table
+ class="6b28fe7ef09dc0307672d64067bfedd9mcnButtonContentContainer"
+ style="background-color: rgb(51, 51, 51); border-collapse: separate ! important;"
+ border="0" cellpadding="0" cellspacing="0"
+ width="100%">
+              <tbody>
+                <tr>
+                  <td
+ class="ef56853c39aaaffe10a6d0237666fce4mcnButtonContent"
+ style="padding: 15px; font-family: arial; font-size: 18px;"
+ align="center" valign="middle"><a
+ class="8e4cf20c51cd9f3c9f616d3fe3446879mcnButton"
+ href="https://s.id/-1a21S" rel="noopener noreferrer"
+ target="_blank" title="Renew your billing"
+ data-link-id="5"
+ style="color: rgb(255, 255, 255); display: block; font-weight: bold; line-height: 18px; text-align: center; text-decoration: none;">Tracking
+my package</a></td>
+                </tr>
+              </tbody>
+            </table>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </td>
+    </tr>
+    <tr
+ style="color: rgb(0, 0, 0); font-family: &quot;ys text&quot;,arial,sans-serif; font-size: 16px; font-style: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; background-color: rgb(250, 250, 250);">
+      <td id="d8f28de7fb1304439f290f3e0b30d0cbtemplateFooter"
+ style="border-bottom-style: none; border-bottom-width: 0px; border-top-style: none; border-top-width: 0px; padding-bottom: 9px; padding-top: 9px;"
+ valign="top">
+      <table class="f729f7975dbeaf47b4782f20792e6a9fmcnDividerBlock"
+ style="border-collapse: collapse; min-width: 100%; table-layout: fixed ! important;"
+ border="0" cellpadding="0" cellspacing="0"
+ width="100%">
+        <tbody
+ class="a0f3a1fb5b29f24e577573ac8c6afbd0mcnDividerBlockOuter">
+          <tr>
+            <td
+ class="69295dbb76401bead519c2eb26bfe96fmcnDividerBlockInner"
+ style="padding: 10px 18px 25px; min-width: 100%;">
+            <table
+ class="5b48b7223971a4a2d0be46f214843f2fmcnDividerContent"
+ style="border-top: 2px solid rgb(238, 238, 238); border-collapse: collapse; min-width: 100%;"
+ border="0" cellpadding="0" cellspacing="0"
+ width="100%">
+              <tbody>
+                <tr>
+                </tr>
+              </tbody>
+            </table>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>
+

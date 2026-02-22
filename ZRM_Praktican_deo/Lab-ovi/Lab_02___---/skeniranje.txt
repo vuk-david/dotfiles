@@ -1,0 +1,11 @@
+nmap -sS <ip>
+
+nmap -sT <ip>
+
+nmap -sN <ip>  (NULL)
+nmap -sF <ip>  (FIN)
+nmap -sX <ip>  (Xmas)
+
+nmap -O <ip>   // Otkrij OS
+
+nmap -A <ip>   // Agresivno

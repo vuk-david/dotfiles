@@ -1,0 +1,247 @@
+#####################################################
+### Bitna razlika izmedju MAC tabele i ARP tabele ###
+#####################################################
+
+    MAC tabela i ARP tabela su RAZLICITE.
+
+    MAC Tabela samog switch-a mapira:  {MAC Address -> switch port}
+    Ta tabela postoji unutar Ethernet switch-a i koristi se za Layer2 Forward.
+
+    Odgovara na pitanje: Na kom portu sam poslednji put video ovu MAC adresu?
+
+
+
+    ARP tabela mapita: {IP Address -> MAC Address}
+    Ova tabela se nalazi unutar host-ova i rutera i koristi se za Layer3 ka
+    Layer2 rezoluciji.
+
+    Odgovara na pitanje: Koja MAC adresa odgovara <ovoj_IP_adresi>?
+
+    U Ethernet mrezi koja koristi ARP, ARP moze da popuni host ARP tabele i
+    switch-evi nezavisno popunjavaju MAC tabele posmatrajuci Fram Source
+    Address-e.
+
+    Znaci ove dve tabele su u odnosu indirektnom, ali nisu ista stvar.
+
+
+
+####################
+### ARP protocol ###
+####################
+    (ovo se desava NAKON dhcp-a)
+
+    ARP radi:    IP_address --> MAC_Address
+
+Prvi put kada povezes svoj racunar Ethernet kablom za mali-kucni-ruter ili
+jednostavno ukljucis Wi-Fi, ti NEMAS "default gateway". Jos uvek ne znas kome
+treba da saljes sve pakete.
+
+U tom slucaju, ono sto se radi jeste da se salje "ARP paket" na sve interfejse.
+Tj. saljes i na enp0s25 i na wls1(ethernet & wi-fi interfejs).
+
+Paket koji se salje, izgleda ovako:
+
+SRC_MAC: 00-21-6A-B6-5A-C4
+DST_MAC: FF-FF-FF-FF-FF-FF  // Broadcast MAC adresa
+
+SRC_IP:  192.168.1.116      // Ovo se valjda dobija od "dhcpd"-a(moja priv adr)
+DST_IP:  192.168.1.3        // Nije mi jasno kako se ovo zna
+
+
+
+Sadrzaj "ARP tabele" se gleda sa:
+
+    [vuk@magic ~]$ arp
+    Address                  HWtype  HWaddress           Flags Mask   Iface
+    _gateway                 ether   28:41:c6:20:45:8c   C            wls1
+
+
+MAC adresa mog rutera:
+(Firefox > 192.168.1.1 > login > Status Tab > "Home Network Information" row)
+
+    HG8245Q2
+    MAC:28:41:C6:20:45:8C
+
+
+
+#############
+### DHCPc ###
+#############
+
+    Moj laptop izvrsava "DHCP client"(dhcpc) koji radi "broadcast DISCOVER"
+    paket koji se salje svima unutar lokalne mreze.
+
+    DHCP server(dhcpd) same lokalne mreze(najcesce ruter) "cuje" ovaj
+    "broadcast DISCOVER" poruku i odgovara sa IP adresom koju ti je "dhcpd"
+    dodelio i ostale gateway detalje.
+
+
+    Kako moj klijent zna da posalje "DISCOVER" poruku svima ako niti ima
+    lokalnu IP adresu, niti ima "default gateway"?
+
+    Koristi specijalno "ETHERNET" zaglavlje i IP broadcast_adresu(poput:
+    255.255.255.255) koje svi uredjaj na lokalnoj mrezi prime i za koje su
+    stvoreni da slusaju.
+
+    Ovo radi zbog toga sto je broadcast rukovan na Link-Layer-u, a PRE nego sto
+    je IP adresa dodeljena.
+
+
+    DHCP server("dhcpd") automatski dodeljuje:
+        + IP Adresu
+        + Subnet mask
+        + Default gateway
+        + DNS Server
+
+
+    Znaci PRVO sto se salje je:
+
+        SRC_MAC: <moja_MAC_adresa>
+        DST_MAC: FF-FF-FF-FF-FF-FF
+        
+        SRC_IP:  0.0.0.0            // Jer jos uvek NEMAM svoju privatnu adresu
+        DST_IP:  255.255.255.255
+
+
+
+    Da li DHCP koristi ARP samo kao komunikacioni protokol da bi dodelio IP
+    adrese?
+
+
+    Nema ARP-a uopste.
+
+    1.Client ff:ff:ff:ff:ff:ff 0.0.0.0 255.255.255.255 DHCP Discover
+
+    2.DHCPsrvr ff:ff:ff:ff:ff:ff 192.168.1.1 255.255.255.255 DHCP Offer
+
+    3.Client ff:ff:ff:ff:ff:ff 0.0.0.0 255.255.255.255 DHCP Request
+
+    4.DHCPsrvr mac address of client 192.168.1.1 192.168.1.102 DHCP ACK
+
+        Client send ethernet frame saying "where is the DhCP server?" so, he
+        sends to broadcast MAC address, because he does not the mac address of
+        dhcp. There can be several DHCP servers. He has no ip, so in the IP
+        packet source is 0.0.0.0. Destination IP reflects Destination MAC =>
+        Broadcast
+
+        Server answers with an unicast IP (OFFER), a default gateway, a DNS &
+        other options. Since the host has not yet agreed anything with the DHCP
+        server, the DHCP serv. will send a broadcast frame.
+
+        Client officially requests (REQ) the IP lease from the server. Since no
+        agreement has been made he just sends a broadcast. from 0.0.0.0 since
+        he stills has no confirmed IP address.
+
+        Server acknowledges it(ACK), from its own mac address, from its own IP,
+        to the IP of the host with the MAC address of the host.
+
+
+
+
+    Okay, now it happened, however, the first message was NOT "discover" but:
+
+    // Filter: "udp.port == 67" ili "dhcp"
+    1. DHCP Request
+    2. DHCP NAK
+    3. DHCP DiscoveR
+    4. DHCP Offer
+    5. DHCP Request
+    6. DHCP ACK
+
+    what the hell are the first two?
+
+    The initial Request is your client asking to reuse its old IP
+    (192.168.1.7). The server sends a NAK to deny that old lease, forcing your
+    client to start over with a full Discover sequence.
+
+
+
+    Okay, what does it mean to send "DHCP Discover"? Does that mean that the
+    radio-signal is broadcasted in ALL directions physically and then only the
+    device that has a "dhcpd" running will respond with a "DHCP Offer" ?
+
+    Correct, the DHCP Discover is a broadcast message sent to every device on
+    the local network segment. Only the network's designated DHCP server
+    (usually the router) is configured to respond with a DHCP Offer.
+
+
+
+    Okay, why is it saying that HWType is "ether" if I'm using a wi-fi
+    interface?
+
+    "ether" denotes the Ethernet protocol family, which is the standard used
+    for framing data over both wired and Wi-Fi (IEEE 802.11) interfaces at the
+    link layer. It's a historical naming convention for MAC addresses.
+
+~~~~~~~~~~~~~~~~~~~~
+~~~ ARP Snooping ~~~
+~~~~~~~~~~~~~~~~~~~~
+
+    Resenje za "ARP Spoofing" je "ARP Snooping", odnosno pracenje ARP upita i
+    odgovora, gde Switch moze da prati ko je sta odgovarao. Ukoliko vidi da za
+    istu IP adresu dolaze DVE RAZLICITE MAC adrese, on bi takvu komunikaciju
+    mogao da blokira.
+
+    Mogao bi da blokira bilo stvarni "default gateway", bilo napadaca, ali
+    stagod da uradi efekat je postignut.
+
+    Jer cela lokalna mreza vise nece imati vezu ka internetu. A ako blokira
+    napadaca, efekat je u potpunosti postignut.
+
+
+    Sustinski ARP protokol je protokol kojim se trenutni uredjaj(laptop)
+    konfigurise cime se dodaje MAC adresa default gateway-a.
+
+
+
+    Napad preko DHCP-a jeste da se na lokalnoj mrezi pojavi jos jedan uredjaj
+    koji izvrsava "dhcpd" a koji moze da dodeli laznu IP Adresu "default
+    gateway"-a ili laznu IP Adresu DNS Server-a.
+
+    U prvom slucaju, lazni "default gateway" znaci da ce taj covek da postane
+    Man-in-The-Middle.
+
+    U drugom slucaju, moze da kontrolise kojim ce se serverima pristupati za
+    odredjene sajtove.
+
+    Npr. ukoliko neko ukuca banka.com, on moze unutar svog DNS servera da ima
+    razresenja takvog imena u IP Adresu svog laznog pshishing web sajta.
+
+    U tom slucaju, kada tamo ukucate svoje kredencijale -- Tu je kraj. Ukrao
+    vam je sav novac i cao zdravo.
+
+
+
+##############################
+### DHCP Starvation Attack ###
+##############################
+
+DoS type of attack
+
+Napadac salje FAKE zahteve sa Spoof-ovanim MAC adresama cime forsira DHCP
+server da lease-uje sve IP adrese iz "bazena".
+
+Novi korisnici sada ne mogu da dobiju svoju IP adresu, i ne mogu da se log-uju.
+
+tools: dhcpstav, yersinia
+
+
+#########################
+### Rogue DHCP Attack ###
+#########################
+
+Drugi problem je da se PRVO napravi "DHCP Starvation" napad, a onda se podesi
+da "moj"(racunar napadaca) ponasa kao DHCP server. Ja znam koje sam sve adrese
+rezervisao laznim DHCP zahtevima i kada se pojave sada uredjaji mojih kolega,
+ja mogu da ih obavestim da je moj racunar "defaul gateway" i da nateram da
+svaka komunikacija u okviru te mreze PRVO PRODJE KROZ MOJ racunar, pa tek onda
+da izadje negde ka internetu.
+
+
+Slicna zastatita kao za ARP napade: "DHCP snooping feature in network devices"
+
+Pusti saobracaj ISKLJUCIVO iz konfigurisanog/autorizovanog DHCP server-a.
+
+
+
+

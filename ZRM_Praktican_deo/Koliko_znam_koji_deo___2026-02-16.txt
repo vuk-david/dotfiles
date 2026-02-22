@@ -1,0 +1,1145 @@
+P01-01___Faze_napada_Izvidjanje.mp4
+
+P02-01___Izvidjanje_DNS_i_IP_adrese.mp4
+P02-02___Izvidjanje_-_mejl_socijalini_inzenjering_i_fizicka_zastita.mp4
+
+P02-03___Skeniranje_-_nmap.mp4
+
+###############################################################################
+###############   P03-01___Snimanje_saobracaja__-__Wireshark   ################
+###############################################################################
+
+    hping3 zbodno za kreiranje paketa koji se pustaju u mrezu i proverava se da
+    li postoji firewall ili ne.
+
+
+    OS Fingerprinting, tj. pronalazenj Operativnog sistema na nekom uredjaju.
+
+    + Aktivni (nmap)
+
+    + Pasivni (pOf:   sniff the traffic and compare to OS fingerprints)
+
+
+    nmap -O target  // procena koji je to OS
+
+    + Banner Grabbing  // Nadjes stvari koje neko nije sklonio
+
+      nmap -sV 192.168.86.32
+
+    + nmap.org/nsedoc/
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~ Sniffing network traffic ~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    Inline fibre taps (ona kartica na laptopu, 80% 20%)
+
+~~~~~~~~~~~~~~~~~
+~~~ Wireshark ~~~
+~~~~~~~~~~~~~~~~~
+
+    Statistics > Conversations > Follow Stream
+
+    Britanski GCHQ razvio CyberChef-a!
+
+
+
+###############################################################################
+#####################   P03-02____Prikupljanje_podataka   #####################
+###############################################################################
+
+    Vulnerability scanners
+
+    SNMP Enumeration // Salju Monitoring informacije na nekom sistemu
+    SNMPv3  // je kriptovana
+
+    SMTP // telnet <ip> 25
+    POP3 // 110 (povlacite mejlova sa servera) , ili IMAP  // telnet <ip> 110
+ 
+
+###############################################################################
+###############   P03-03___Mrezni_Napadi__-__MAC_ARP_Spoofing   ###############
+###############################################################################
+
+
+    MAC flooding ( i onda switch postaje HUB)
+    solution: switch port security (mora da se ukljuci na port-u)
+
+~~~~~~~~~~~~~~~~~~~~
+~~~ ARP protocol ~~~
+~~~~~~~~~~~~~~~~~~~~
+
+    + ARP Poisoning
+
+        resenje: DHCP Snooping i ARP snooping
+
+        Switch prati ko je sta odgovarao. TO je resenje.
+
+
+
+###############################################################################
+#######################   P04-01___DHCP_IP_TCP_napadi   #######################
+###############################################################################
+
+ono moje:
+
+-------------------------------------------------------------------------------
+#####################################################
+### Bitna razlika izmedju MAC tabele i ARP tabele ###
+#####################################################
+
+    MAC tabela i ARP tabela su RAZLICITE.
+
+    MAC Tabela samog switch-a mapira:  {MAC Address -> switch port}
+    Ta tabela postoji unutar Ethernet switch-a i koristi se za Layer2 Forward.
+
+    Odgovara na pitanje: Na kom portu sam poslednji put video ovu MAC adresu?
+
+
+
+    ARP tabela mapita: {IP Address -> MAC Address}
+    Ova tabela se nalazi unutar host-ova i rutera i koristi se za Layer3 ka
+    Layer2 rezoluciji.
+
+    Odgovara na pitanje: Koja MAC adresa odgovara <ovoj_IP_adresi>?
+
+    U Ethernet mrezi koja koristi ARP, ARP moze da popuni host ARP tabele i
+    switch-evi nezavisno popunjavaju MAC tabele posmatrajuci Fram Source
+    Address-e.
+
+    Znaci ove dve tabele su u odnosu indirektnom, ali nisu ista stvar.
+
+
+
+####################
+### ARP protocol ###
+####################
+    (ovo se desava NAKON dhcp-a)
+
+    ARP radi:    IP_address --> MAC_Address
+
+Prvi put kada povezes svoj racunar Ethernet kablom za mali-kucni-ruter ili
+jednostavno ukljucis Wi-Fi, ti NEMAS "default gateway". Jos uvek ne znas kome
+treba da saljes sve pakete.
+
+U tom slucaju, ono sto se radi jeste da se salje "ARP paket" na sve interfejse.
+Tj. saljes i na enp0s25 i na wls1(ethernet & wi-fi interfejs).
+
+Paket koji se salje, izgleda ovako:
+
+SRC_MAC: 00-21-6A-B6-5A-C4
+DST_MAC: FF-FF-FF-FF-FF-FF  // Broadcast MAC adresa
+
+SRC_IP:  192.168.1.116      // Ovo se valjda dobija od "dhcpd"-a(moja priv adr)
+DST_IP:  192.168.1.3        // Nije mi jasno kako se ovo zna
+
+
+
+Sadrzaj "ARP tabele" se gleda sa:
+
+    [vuk@magic ~]$ arp
+    Address                  HWtype  HWaddress           Flags Mask   Iface
+    _gateway                 ether   28:41:c6:20:45:8c   C            wls1
+
+
+MAC adresa mog rutera:
+(Firefox > 192.168.1.1 > login > Status Tab > "Home Network Information" row)
+
+    HG8245Q2
+    MAC:28:41:C6:20:45:8C
+
+
+
+#############
+### DHCPc ###
+#############
+
+    Moj laptop izvrsava "DHCP client"(dhcpc) koji radi "broadcast DISCOVER"
+    paket koji se salje svima unutar lokalne mreze.
+
+    DHCP server(dhcpd) same lokalne mreze(najcesce ruter) "cuje" ovaj
+    "broadcast DISCOVER" poruku i odgovara sa IP adresom koju ti je "dhcpd"
+    dodelio i ostale gateway detalje.
+
+
+    Kako moj klijent zna da posalje "DISCOVER" poruku svima ako niti ima
+    lokalnu IP adresu, niti ima "default gateway"?
+
+    Koristi specijalno "ETHERNET" zaglavlje i IP broadcast_adresu(poput:
+    255.255.255.255) koje svi uredjaj na lokalnoj mrezi prime i za koje su
+    stvoreni da slusaju.
+
+    Ovo radi zbog toga sto je broadcast rukovan na Link-Layer-u, a PRE nego sto
+    je IP adresa dodeljena.
+
+
+    DHCP server("dhcpd") automatski dodeljuje:
+        + IP Adresu
+        + Subnet mask
+        + Default gateway
+        + DNS Server
+
+
+    Znaci PRVO sto se salje je:
+
+        SRC_MAC: <moja_MAC_adresa>
+        DST_MAC: FF-FF-FF-FF-FF-FF
+        
+        SRC_IP:  0.0.0.0            // Jer jos uvek NEMAM svoju privatnu adresu
+        DST_IP:  255.255.255.255
+
+
+
+    Da li DHCP koristi ARP samo kao komunikacioni protokol da bi dodelio IP
+    adrese?
+
+
+    Nema ARP-a uopste.
+
+    1.Client ff:ff:ff:ff:ff:ff 0.0.0.0 255.255.255.255 DHCP Discover
+
+    2.DHCPsrvr ff:ff:ff:ff:ff:ff 192.168.1.1 255.255.255.255 DHCP Offer
+
+    3.Client ff:ff:ff:ff:ff:ff 0.0.0.0 255.255.255.255 DHCP Request
+
+    4.DHCPsrvr mac address of client 192.168.1.1 192.168.1.102 DHCP ACK
+
+        Client send ethernet frame saying "where is the DhCP server?" so, he
+        sends to broadcast MAC address, because he does not the mac address of
+        dhcp. There can be several DHCP servers. He has no ip, so in the IP
+        packet source is 0.0.0.0. Destination IP reflects Destination MAC =>
+        Broadcast
+
+        Server answers with an unicast IP (OFFER), a default gateway, a DNS &
+        other options. Since the host has not yet agreed anything with the DHCP
+        server, the DHCP serv. will send a broadcast frame.
+
+        Client officially requests (REQ) the IP lease from the server. Since no
+        agreement has been made he just sends a broadcast. from 0.0.0.0 since
+        he stills has no confirmed IP address.
+
+        Server acknowledges it(ACK), from its own mac address, from its own IP,
+        to the IP of the host with the MAC address of the host.
+
+
+
+
+    Okay, now it happened, however, the first message was NOT "discover" but:
+
+    // Filter: "udp.port == 67" ili "dhcp"
+    1. DHCP Request
+    2. DHCP NAK
+    3. DHCP DiscoveR
+    4. DHCP Offer
+    5. DHCP Request
+    6. DHCP ACK
+
+    what the hell are the first two?
+
+    The initial Request is your client asking to reuse its old IP
+    (192.168.1.7). The server sends a NAK to deny that old lease, forcing your
+    client to start over with a full Discover sequence.
+
+
+
+    Okay, what does it mean to send "DHCP Discover"? Does that mean that the
+    radio-signal is broadcasted in ALL directions physically and then only the
+    device that has a "dhcpd" running will respond with a "DHCP Offer" ?
+
+    Correct, the DHCP Discover is a broadcast message sent to every device on
+    the local network segment. Only the network's designated DHCP server
+    (usually the router) is configured to respond with a DHCP Offer.
+
+
+
+    Okay, why is it saying that HWType is "ether" if I'm using a wi-fi
+    interface?
+
+    "ether" denotes the Ethernet protocol family, which is the standard used
+    for framing data over both wired and Wi-Fi (IEEE 802.11) interfaces at the
+    link layer. It's a historical naming convention for MAC addresses.
+
+~~~~~~~~~~~~~~~~~~~~
+~~~ ARP Snooping ~~~
+~~~~~~~~~~~~~~~~~~~~
+
+    Resenje za "ARP Spoofing" je "ARP Snooping", odnosno pracenje ARP upita i
+    odgovora, gde Switch moze da prati ko je sta odgovarao. Ukoliko vidi da za
+    istu IP adresu dolaze DVE RAZLICITE MAC adrese, on bi takvu komunikaciju
+    mogao da blokira.
+
+    Mogao bi da blokira bilo stvarni "default gateway", bilo napadaca, ali
+    stagod da uradi efekat je postignut.
+
+    Jer cela lokalna mreza vise nece imati vezu ka internetu. A ako blokira
+    napadaca, efekat je u potpunosti postignut.
+
+
+    Sustinski ARP protokol je protokol kojim se trenutni uredjaj(laptop)
+    konfigurise cime se dodaje MAC adresa default gateway-a.
+
+
+
+    Napad preko DHCP-a jeste da se na lokalnoj mrezi pojavi jos jedan uredjaj
+    koji izvrsava "dhcpd" a koji moze da dodeli laznu IP Adresu "default
+    gateway"-a ili laznu IP Adresu DNS Server-a.
+
+    U prvom slucaju, lazni "default gateway" znaci da ce taj covek da postane
+    Man-in-The-Middle.
+
+    U drugom slucaju, moze da kontrolise kojim ce se serverima pristupati za
+    odredjene sajtove.
+
+    Npr. ukoliko neko ukuca banka.com, on moze unutar svog DNS servera da ima
+    razresenja takvog imena u IP Adresu svog laznog pshishing web sajta.
+
+    U tom slucaju, kada tamo ukucate svoje kredencijale -- Tu je kraj. Ukrao
+    vam je sav novac i cao zdravo.
+
+
+
+##############################
+### DHCP Starvation Attack ###
+##############################
+
+DoS type of attack
+
+Napadac salje FAKE zahteve sa Spoof-ovanim MAC adresama cime forsira DHCP
+server da lease-uje sve IP adrese iz "bazena".
+
+Novi korisnici sada ne mogu da dobiju svoju IP adresu, i ne mogu da se log-uju.
+
+tools: dhcpstav, yersinia
+
+
+#########################
+### Rogue DHCP Attack ###
+#########################
+
+Drugi problem je da se PRVO napravi "DHCP Starvation" napad, a onda se podesi
+da "moj"(racunar napadaca) ponasa kao DHCP server. Ja znam koje sam sve adrese
+rezervisao laznim DHCP zahtevima i kada se pojave sada uredjaji mojih kolega,
+ja mogu da ih obavestim da je moj racunar "defaul gateway" i da nateram da
+svaka komunikacija u okviru te mreze PRVO PRODJE KROZ MOJ racunar, pa tek onda
+da izadje negde ka internetu.
+
+
+Slicna zastatita kao za ARP napade: "DHCP snooping feature in network devices"
+
+Pusti saobracaj ISKLJUCIVO iz konfigurisanog/autorizovanog DHCP server-a.
+
+
+
+
+
+-------------------------------------------------------------------------------
+    ARP Snooping je zastita.
+
+
+~~~~~~~~~~~~
+~~~ DHCP ~~~
+~~~~~~~~~~~~
+    + DHCP Starvation attack
+    + Rogue DHCP server attack  // Starvation + ja glumim da sam DHCP
+    + DHCP Protection           // DHCP Snooping feature on netwrork devices
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~ IP and TCP attacks ~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + Split handshake (TCP) can trick the IDS/FW software on the client side
+
+    + Shrew DoS napad  (RTO (Retransmission Timeout) RTT (Round Trip Time))
+      (Sofisticiran DoS)
+
+    + SYN Flooding (TCP)
+
+    + IP address Spoofind (IP)  // Pravila o lepom ponasanju
+      (If there is NAT between attacker and vicitm -- IP Spoofing not possible)
+
+
+
+###############################################################################
+###########################   P04-02___DNS_Napadi   ###########################
+###############################################################################
+
+    + DNS Cache Poisoning
+
+    + Kaminsku poisoning attack
+      (Measures against: randomize port and transactionID & bailwick check)
+      Samo ANS moze da daje odgovore na victim.com zahteve
+
+    + DNS tunneling / data exfiltration // Svuda je otvoren port 53
+      McAFee koristi data_exfiltration i legitiman je
+
+    + DNS fast fluxing
+      (a method to hide botnet)
+
+      ne hardcode-u je se IP address Bot master koji daje (C&C, tj. Command and
+      Control Centre) komade, vec da se napise DNS ime.
+
+        + Single flux: Postoji vise razlicitih DNS imena (DNS odgovori sa
+          kratkim TTL-om)
+
+          Cesto se menjaju IP adrese iza nekog simbolickog imena.
+
+        +  Double flux: Botovi NE komuniciraju sa bot masterom, vec sa
+           proxy-ima koji su na putanji prema botmaster-u.
+
+    + Domain generation algorimi:
+
+        onaj koji priprema botnet, on 6 meseci ranije rezervise ove domene, a
+        tih 20-ak imena je dobio iz tog svog programa koji je napisao.
+
+        Taj svoj program implementira u kOd malvera, i onda se na taj nacin
+        komunicira sa botmaster, tako sto se razresavaju ova imena koja nisu
+        upisana, nego su generisana kroz nekakav algoritam.
+
+
+    Resenje: DNSSEC
+
+
+
+##############################################################################
+#################   P05_01___Preuzimanje_sesija___Firewall   ##################
+###############################################################################
+
+    Spoofing vs Hijacking of the SESSION.
+
+        + Spoofing  je predstavljanje kao neki korisnik.
+
+        + Hijacking je kradja korisnikove sesije.
+
+            + TRANSPONRTNI nivo Hijacking-a
+                1. TCP Hijacking
+                    + RST hijacking               (sofisticiran DoS napada)
+                    + Blind Hijacking
+                    + Source routing
+                    + ICMP and ARP spoofing
+
+                2. UDP Hijacking
+                    + No session, port numbers are sufficient
+                    + Attack effectiveness depends on the quality of the
+                      application
+
+                    + (moze se i DNS-Spoofing smatrati)
+
+            + Apliccation level sessions
+                + Man-in-the-middle
+                + Man in the browser(trojan that sends ID to the attacker)
+                + XSS
+                + CSRF
+                + Replay-attacks
+                + Session fixation(ja napravim sesiju i posaljem je zrtvi)
+
+
+###############################################################################
+############################   P05_02___Firwall   #############################
+###############################################################################
+
+
+###############################################################################
+##################   P05_03___IDS_or_Honeypot_izbegavanje   ###################
+###############################################################################
+
+
+
+
+
+
+###############################################################################
+###################   P06_01__System_attack__-__Password   ####################
+###############################################################################
+// SVE znam: 2026-02-18
+
+    Hacking phases:
+
+        1. Reconnaissance(izvidjanje) and footprinting
+        2. Scanning and enumeration
+        3. Gaining Access
+            + Network Attacks
+            + System  Attack
+        4. Maintaning access/escalating privileges
+        5. Clearing Traces
+
+
+    users/groups/password
+
+        Neki korisnici su semanticki u jednoj ili vise grupa radi privilegija
+
+
+
+    SID - Security ID
+
+        To je objekat koji je pridruzen skoro svakom objektu unutar Windows-a.
+        Objekti su i korisnici.
+
+    SIDs, groups i passwords se nalaze u SAM(Security Accounts Manager)
+    fajlovima.
+
+
+
+    Location on disk:
+        C:\Windows\System32\config\SAM
+
+    U runtime-u je ucitan unutar Windows registry-a, pod: 
+        HKEY_LOCAL_MACHINE\SAM
+
+
+    "SAM" file ne moze da se pomera ili kopira dok Windows radi. Jedino kada se
+    ugasi Windows. Znaci mozemo da imamo neki OS na HDD-u, a da smo drugi OS
+    podigli sa SSD-a, u tom trenutku se moze prekopirati.
+
+    Why you cannot copy it while Windows is running:
+
+    The file is locked by the Local Security Authority Subsystem Service,
+    implemented in lsass.exe. Windows keeps an open handle to the file and
+    enforces exclusive access. So normal copy operations fail with "file in
+    use".
+
+    However, it can be accessed:
+
+    From offline media (booting into another OS)
+
+    From Windows Recovery Environment
+
+    Via Volume Shadow Copy (if privileges allow)
+
+    Password hashes inside SAM are typically NT hashes (NTLM). They are used
+    for authentication comparison, not reversible storage.
+
+    TL;DR:
+    SAM is the local account database. It stores password hashes. It is locked
+    while Windows is running because LSASS holds it open.
+
+
+    SAM fajl je enkriptovan koristeci SYSTEM "hive"(kosnica) koja se nalazi na:
+
+        C:\Windows\System32\config\SYSTEM
+
+
+-------------------------------------------------------------------------------
+    It stores configuration data about the hardware, drivers, services, and
+    low-level OS settings.
+
+    Short answer: SYSTEM does not contain one simple ready made key. It
+    contains material from which Windows derives the key that protects parts of
+    the SAM database.
+
+    More precise explanation.
+
+    Inside the SYSTEM registry hive there is a value called the Boot Key,
+    historically related to Syskey. The Boot Key is not stored as a single
+    obvious blob. It is split across multiple registry subkeys under:
+
+    ControlSetxxx\Control\Lsa
+
+    Windows reconstructs those pieces at boot time to derive a system key.
+
+    That derived key is then used to decrypt another key stored inside the SAM hive. That second key (often called the hashed boot key or SAM key) is what is actually used to protect the password hash data inside SAM.
+
+    So the chain is:
+
+    SYSTEM hive -> reconstruct boot key
+    Boot key -> decrypt SAM internal key
+    SAM internal key -> decrypt stored password hashes
+
+
+
+    Uspeo sam:
+        
+        Sa D: diska(Windows 7) sam kopirao:
+
+            C:\Windows\System32\config\SAM
+            C:\Windows\System32\config\SYSTEM
+
+        Onda sam prebacio na Linux.
+        Na Linuxu sam preko yay-a skinuo: samdump2
+
+            $samdump2 -o DEKRIPTOVANI_SAM_FAJL.txt system sam
+
+        To je to.
+        Sad mogu da probam rainbow napad.
+        (Radi i za Win10: ne secam se kako sam tacno izvukao ovo sa Win10)
+
+        [Moze da se cita i sa "Cain & Abel" alatom]
+
+-------------------------------------------------------------------------------
+
+    Stara verzija hash-eva je tzv. "LM" hash.
+
+        Link:1010:LM:NTLM:::
+
+    Nakon XP-a, vise se ne cuva "LM" hash.
+    Password Crackers:
+
+        Ophcrack and L0phtcrack // Instalirao "Ophcrack", ali nisam probao
+
+
+    ~~~~~~~~~~~~~~~
+    ~~~ LM hash ~~~
+    ~~~~~~~~~~~~~~~
+
+        Lozinka nema vise od 14 karaktera.
+        Prvo se lozinka, eventualno, dopunjava do 14 karaktera.
+
+        Deli se na 2 dela po 7 karaktera koji sada predstavljaju DES kljuceve.
+
+        DES enkriptuje string "KGS!@#$%". Jedan sa prvim kljucem, drugi sa
+        drugim kljucem(7 karaktera).
+
+        Konkatenira oba DES-ekriptovana string-a i to je LM hash.
+
+
+        Trivijalno za pogadjanje za lozinke ispod 8 karaktera. (Jer je drugi
+        deo potpuno NULL karakterima)
+
+        Znaci svaki od ova dva 7-karaktera su KLJUC unutar DES algoritma, a
+        tekst koji se enkriptuje je: KGS!@#$% 
+
+        I onda ako su lozinke krace od 8 karaktera, drugi deo je UVEK:
+
+            NULL NULL NULL NULL NULL NULL NULL      // DES kljuce drugog dela
+
+        String "KGS!@#$%"
+
+        I onda ce rezultat uvek biti isti.
+
+        Jos su te starije verzije windows bile case insensitive, tj. sve se
+        pretvaralo ili u velika ili u mala slova, pa je i broj bio manji.
+
+        I onda bi jednostavno mogao da dodje Brute-forcom do samih lozinki.
+
+
+    ~~~~~~~~~~~~~~~
+    ~~~ NT hash ~~~
+    ~~~~~~~~~~~~~~~
+
+        128bit, a koristi MD4 hash algoritam.
+
+        NEMA salt!
+
+        Koristili RC4 za enkirpciju(tek 2016. krenuli da koriste AES)
+
+
+    ~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ Linux passwords ~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~
+
+        Passwordi se cuvaju unutar:
+            
+            /etc/shadow
+
+        koji je hash-iran.
+        Dok su users/groups itd. unutar:
+
+            /etc/password
+
+
+
+###############################################################################
+#######   P06_02___System_attack__-__Password_cracking_keyloggers_etc   #######
+###############################################################################
+
+    Password Cracking Techniques:
+
+        1. Non-electronic(shoulder surfing, dumpster diving, SE, phishing)...
+
+        2. Actione Online Attacks
+            + Dictionary attacks
+            + Brute-Force attacks
+            + Hash Injection
+
+        3. Passive Online Attacks (sniffing)
+            + Wire Sniffing
+            + Man-in-the-Middle attacks
+            + Replay attacks
+
+        4. Default password // Mirai botnets
+
+        5. Offlice Attacks
+            + Precomputed hashes 
+            + Distributed network attacks
+
+
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ Eskalacija privilegija ~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+        + Horizontalno kretanje (dobio peru, pa dobio miku, pa dobio lazu)
+        + Vertikalno kretanje   (dobio peru, a nakon toga admin-a)
+
+
+        Privilege escalathing method:
+
+            + Eksploatacija ranjivosti unutar OS-a
+
+            + Podmetanje laznog DLL-a na Windows-u koji vraca sesiju sa
+              privilegijama.(metasploit framework)
+
+            + ...
+
+    ~~~~~~~~~~~~~~~~~~~~~
+    ~~~ System Pwning ~~~
+    ~~~~~~~~~~~~~~~~~~~~~
+        Kada napadac zavlada odredjenom sistemu, da bi ostao na masini.
+
+        + Backdoors
+        + Crackers
+        + Keyloggers
+
+            Hardverski:
+                + PC/BIOS(firmware)
+                + Keyboard with keylogger
+                + USB 2.0, PS/2, bluetooth, WiFi, ...
+
+            Softverski:
+                + Kernel
+                + Application
+                + Hypervisor
+
+        + Malware(Spyware)
+
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ Alternative Data Stream ~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        type triforce.exe > smoke.txt:triforce.exe
+        del triforce.exe
+        start smoke.txt:triforce.exe
+
+    ~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ Steganografija ~~~
+    ~~~~~~~~~~~~~~~~~~~~~~
+
+        snow -C -m "My bank account number is 1235" -p "password123" Hello.txt
+        HelloWord.txt
+
+
+###############################################################################
+############   P06_03___System_attack__-__Eskalacija_privilegija   ############
+###############################################################################
+// Ovde realno nema nista. Pricao informativno o Shellcode-ovima
+
+    Mehanizam Upada u sisteme i vertikalne eskalacije privilegija
+
+    Heatbleed je bug unutar SSL biblioteke, to je underflow napad.
+
+
+
+
+###############################################################################
+#################   P09_01___Dos_napadi___-___Mirai_botnet   ##################
+###############################################################################
+
+    ~~~~~~~~~~~~~~~~~~
+    ~~~ DoS napadi ~~~
+    ~~~~~~~~~~~~~~~~~~
+
+        + Volumentrijski napadi. (velika kolicina paketa)
+        + TCP State exhaustion attack
+        + Application attack
+
+
+        Prakticno je nemoguce odbraniti se od Volumetrijskih napada. Sustinski
+        ne mora da bude napad, kada bi se desilo da obicni korisnici svi
+        odluce(njih 30miliona ili tako nesto) da odjednom pristupe nekom
+        server-u sa jednom IP adresom, jednostavno ako ne moze da obradi sve
+        pristigle zahteve, servis pada.
+
+        + DoS amplification
+
+            DNS koriscenje.
+
+            Botnet spoof-uje source IP adresu da bude IP adresa zrtve. A onda
+            DNS odgovara ka IP adresi iz source-a.
+
+            Zahtev je mali, 60 bytes.
+            Odgovor je veliki, 512 bytes.
+
+            Ne moze se odbraniti od ovoga jer svi moraju da ostave otvoren port
+            53 otvorenim jer inace ne mogu da idu na internet. TJ. mogu, ali bi
+            morali da ukucavaju IP adrese za svaki web sajt koji zele da
+            posete.
+
+            Botnet sa 5000 bot-ova generise 1 Mbps po bot-u, sto je oko 40 Gbps
+            Tj. DNS generise odgovore za svaki zahev koji stigne od bot-a.
+
+
+        + TCP State exchaustion attack
+
+            + SYN flood napad. Napadac salje TCP SYN sa fake src IP adresom.
+              Zrtva kreira STATE i ceka na odgovor koji nikada ne stize.
+
+            + Service request flood attack
+
+                hping3 target --flood
+
+                (U stvarnosti se NE koristi ovo, vec neki bot-softver)
+
+
+        + Fragmentation attack
+
+        + Application level service request floods
+        + Peer-To-Peer attack
+
+        + Permanent DoS attack (tipa ransomware, pa nije bas DoS)
+
+
+    ~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ Distributed DoS ~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~
+
+    Botnet je mreza botova koja predstavlja skup fizickih masina koje su
+    zarazena nekim malverom, a koji su upravljani od strane botmaster-a.
+
+    C&C (One central Command and Control centre) upravlja svim botovima.
+
+        C&C management channel(well known ports):
+            + IRC
+            + DNS
+            + Twitter tvitovi. Skupljaju se poruke
+
+        Npr. kamere pristupaju twitter-u je anomalija i moze biti detektovana.
+        Ali uglavnom se hakeri ne kriju jer samo nadju nove botove.
+
+    Medjutim, postoje i oni koji kontrolu daju na sofisticirane nacine: Twitter
+
+
+    ~~~~~~~~~~~~~~~~~~~~
+    ~~~ Mirai botnet ~~~
+    ~~~~~~~~~~~~~~~~~~~~
+
+        Target-ovani uredjaji:
+            + IoT kamere
+            + DVR
+            + Kucni ruteri
+            ...
+
+        Mirao je modifikacija: Bashlite-a
+
+        Mete su bili:
+            + Kamere
+            + Mali-kucni ruter
+
+        DarkNexus je nastao nad Mirai-em.
+
+        Proverava da li su uredjajima otoreni port-ovi: 23 i 2323 i ako jesu
+        pokusava default password.
+
+        (Proba nekih 62 razlicitih default lozinki za razne ceste uredjaje)
+
+        Cim udje, Mirai ZATVORI port 23, a to radi da neki drugi bot ne bi
+        preuzeo kontrolu nad tim uredjajem.
+
+        Jer dva bot-a na istom uredjaju je samo jedan bot. Stoga, da bi se to
+        sprecilo, odmah se zatvara por 23.
+
+        Bot informise centralni server da je uspeo. Centralni server posalje
+        malver za OS zrtve.
+
+        Malver biva ucitan u zrtvu.
+
+
+        Takodje, kada se resetuje uredjaj--Mirai se ne startuje ponovo. Tako da
+        se obicnim reset-om, uredjaj "cisti" od malvera.
+
+        To je uradjeno da bi se teze detektovalo, a ukoliko bi izgubili jednog
+        bot-a, to nije strasno. A mozda ga nisu ni izgubili ako je reset-ovan
+        umesto detektovan i onda mozda mogu da probaju da se na njega nakace
+        ponovo.
+
+
+        Mirao je pisan za arhitekture koji cine 74% uredjaja od ovih tipova.
+            + MIPS 32-bit
+            + ARM  32-bit
+            + x86  32-bit
+
+
+        Protokoli koji su korisceni
+        CWMP protokol koji je koristio Deusthce da komunicira sa ruterima (26)
+        Telnet
+        HTTPS
+        FTP
+        SSH
+
+
+        Postojala su 32 klasera botneta unutar Mirai-a.
+
+        Imali su vise desetina CnC centara da ne bi mogli da se lako blokiraju.
+
+        Malveri odgovaraju na svakih: 60, pa su hakeri menjali na 15s itd.
+
+        A komunikacije su cudni stringovi koji razumeju samo CnC-ovi.
+
+
+###############################################################################
+###########   P09-02___Odbrana_od_DoS_napada__Hardverski_trojanci   ###########
+###############################################################################
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ Alati za sprecavanje DoS napada ~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+        Sprecavanje IP spoof-inga. To je nesto sto bi svaka mreza trebalo da
+        radi, odnosno da NE pusta da paket izadje sa ruter-a ukoliko source IP
+        adresa NE odgovara samom ruter-u koji salje taj paket.
+
+        Ali kako je internet decentralizovan, to ne moze da se enforce-uje.
+
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ Mehanizmi Zastite (OVO DOBRO NAUCI, ovo pitaju) ~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        + BGP RTBH // Remotely Triggered Black Hole filtering
+
+            Pravljene "crne rupe" u rutiranje koja je prozvana, a ta
+            informacija se salje putem BGP-a.
+
+
+
+        + BGP Flowspec (najsavrseniji nacin za odbranu od DoS napada)
+
+          Kada detektuje zrtva da je napadnuta DDoS-m, onda salje BGP u kome
+          moze da ukoduje:
+
+            Ako dodje paket koji je za mene(IP: 1.1.1.4), po UDP port-u 17, i
+            ako je paket velicine <= 40 bytes, onda limit-uj takav saobracaj na
+            10Mbps.
+
+          Onda ce ta BGP poruka da dodje do "Edge router"-a samog ISP-a i TU ce
+          biti postavljena pravila koja nece isfiltrirati pakete koji idu ka
+          ovom (1.1.1.4) website-u, vec ce samo suzbiti taj napad da moze da
+          dolazi maksimalno 10 Mbps po sekundi ili tako nesto.
+
+          Npr. iptables -I INPUT -p udp --dport 17 -m limit --hit-count 1/s --limit-burst 2 -j DROP
+
+
+          Medjutim, ako napadac uzme sa menja port-ove, onda ti paketi i dalje
+          prolaze i ovaj sistem nije vise savsen.
+
+          A ako bih znao i da se filtrira po velicina paketa, onda bih slao
+          sarene velicine paketa itd.
+        
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ Hardverski Trojanci   (od 21m 03s) ~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        So su tranzistori koji cine manje od 0.01$ IC-a(Integrated Chipa).
+
+        Ne moze se otkriti detekcije potrosnje energije jer jer razlika
+        izuzetno mala.
+
+        Postoje i trojanci koje proizvodjaci ugradjuju u svoje urdjaje koji
+        "kazu" da ce taj uredjaj da "crkne" nakon odredjenog broja paljenja i
+        gasenja ili nakon nekog vremena, cime se ostvaruje "Planned
+        Obsolesence".
+
+
+        + Combinational Trojan 
+
+            Aktiviraju se po pojavi nekog signala.
+
+
+
+        + Sekvencijalni Trojanci
+
+            Imaju neki brojac, pa nakon sto izbroji do X, nesto se radi.
+
+
+
+        Napravi se AC(Access Point) u koji se ovo ugradi, a koji nece da
+        promeni funkcionalnost uredjaja, ali ce unutar Wi-Fi signala da nekako
+        bude ukodovan encryption-key.
+
+        Npr. malo manja amplituda signala itd.
+
+        bit-po-bit se ocitava sa "jedinice" signala. Onaj koji je postavio ovog
+        trojanca, taj zna da razlikuje veci od manjeg signala i tako zna da li
+        je bit kljuca koji se salje: 1 ili 0, respektivno.
+
+        Iako zna da uredjaj koji prima signal ce oba signala da protumaci kao
+        1, zbog te tolerancije amplitude.
+
+
+        A postoji i razlika u FREKVENCIJI.
+
+
+        Velicina tog trojanca je svega 0.02% digitalnog dela chip-a.
+
+        Razlika od, recimo, 20 tranzistora na chip koji ima nekoliko desetina
+        MILIJARDI tranzistora, to je toliko mala promena da niko ne bi mogao da
+        je detektuje.
+
+        To je toliko mala razlika u vecoj kolicini struje i to je JAKO tesko za
+        detektovanje.
+
+
+        Postoji nesto sto se zove "TEMPEST", odnosno "Zastita od
+        kompromitujuceg Elektromagnetnog zracenja".
+
+        Ne mozemo da budemo sigurno da neko u Chip nije ugradio neku drugu
+        funkcionalnost gde ce racunar koji koristimo odavati neko
+        Elektromagnetno zracenje, kroz koje ce javljati nekome, ko je postavio
+        uredjaj 100m od vase kuce/racunara, sta se na tom racunaru desava.
+
+        Resenje za to je da se koriste MOZDA kompromitovani racunari u nekakvim
+        bunkerima, tipa Faradejevim kavezima, jer ne mozemo da proverimo da li
+        nas chip ima takav propust ili ne.
+
+
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ Problem sa kompajlerima ~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        Kako mozemo da budemo sigurni da ono sto smo MI napisali u C-u, recimo,
+        da je to PRAVILNO prevedeno na asembler, tj. na masinske instrukcije?
+
+        Mozda je neko ugravirao neki skup instrukcija u vas izvrsni kOd, bez
+        vaseg znanja.
+
+        Nekada jednostavno postoje greske. Mi nesto napisemo u C-u i to
+        ISPRAVNO, ali kompajler izgenerise kOd potpuno pogresno ili delimicno
+        pogresno cime ekstremno otezava nalazenje greske.
+
+        Compcert provera da li C se mapira 1-1 na asembler.
+
+
+
+###############################################################################
+#####################   P11___Sigurnost_WiFi_i_Blueooth   #####################
+###############################################################################
+~~~~~~~~~~~~~~
+~~~ P11_01 ~~~
+~~~~~~~~~~~~~~
+
+    SSID  - Service Set ID      (Ovo je ime naseg interneta: Vuk, Vuk_5G)
+    BSSID - Base Service Set ID (Ovo je MAC adresa Access Point-a)
+
+    Monitoring mode same Wireless-mrezne kartice. Kada se upali, onda sve
+    signale koje detekuje, moze da snimi.
+
+    EAP(Enterprised mode), ne radi se na AP-u nego na nekom drugom uredjaju.
+    Svako ima poseban username i password.
+
+
+
+    WEP:
+        1. Client -> AP ("Ja zelim da pristupim mrezi")
+        2. AP -> Client ("Evo ti slucajna vrednost")
+        3. Cient -> AP  ("Evo ti desifrovana vrednost")
+        4. AP -> CLient ("Mozes da udjes ako si dobro desifrovao")
+
+
+        Koristi RC4 algoritam koji je jos 2006. postao los.
+
+        + 64  bit = 24bit IV +  40bit key
+        + 128 bit = 24bit IV + 104bit key
+
+        IV je inicijalizacioni vektor
+
+
+        ICV je "Integriry Check Vector" (koristi se obican CRC32 hahah)
+        ICV je 32bit.
+
+
+    WPA:
+        ICV je 64bit, ali isto koristi CRC32.
+
+        Razlika u odnosu na WEP je sto koristi:
+
+            TKIP(Temporal Key Internet Protocol)
+
+        Kljucevi se menjaju svaki cas po odredjenom protokolu.
+        Takodje u pozadini koristi RC4.
+
+        Michael Algoritam
+
+~~~~~~~~~~~~~~
+~~~ P11_02 ~~~
+~~~~~~~~~~~~~~
+
+    EAP poruke(Extensible Authentication poruke)samo izmedju mob. i AP-a.
+
+    Protokol EAP poruka je "RADIUS".
+
+
+    Za Wi-fi postoje tzv. "Group kljucevi".
+
+    GMK(generisan od strane AP-a)
+    GTK(genertisan od strane mobilnog uredjaja)
+
+
+    27:07 (Sta treba da naucimo od ovoga)
+        
+        1. Zasto se smatraju WEP i WPA za slabe protokole, a zasto je WPA2
+           siguran protokol
+
+        2. Da napravite razliku izmedju: privatnog rezim rada, enterprise
+           rezima rada.
+
+
+    Znaci postoje:
+        + EAP-TLS
+        + EAT-TTLS // Tunnel TLS
+        + PEAP     // Protected EAT
+        + EAT-IKEv2, EAP-MSCHAPv2, LEAP)
+
+
+    Napadi na Wi-Fi:
+
+        + Wardriving (Snowden isao po kraju, snimao Wifi i hakovao kasnije)
+        + Rogue Access Point (lazan, ali slican SSID. Tipa "Vok", umesto "Vuk")
+        + Jamming attack (DoS) emitovanje jakog EM signala na nekom kanalu
+
+
+    #########################
+    ### Bluetooth hacking ###
+    #########################
+
+        2.4 GHz, do 100m
+
+        Postoje 4 sigurnosna rezima:
+            1. 
+            2. i 3. se koristi PIN-ovima
+            4. ECDH (Eclipctic Curve Diffie Hellman)
+
+        Pomocu E22 se generise "inicijalizacioni kljuc".
+
+
+        Bluetooth LE(Low Energy)
+
+
+        Moze da se snimi Bluetooth komunikacija preko Wi-Fia.
+        Nije potreban monitoring rezim rada.
+
+
+        Bluejacking je slanje anonimne SMS poruke preko vaseg telefona, i time
+        moze da uradi nesto u vase ime.
+
+        Bluesnarfing // Exploit firmware flaw in older devices
+        Bluesnipping // Long range Snarfing
+        Blueballing  // Break pairing of two devices
+
+
+###############################################################################
+#################   P11_03___Lab__Demonstracija_WEP_napada   ##################
+###############################################################################
+
+    Ovo je samo demonstrativno, ali je lepo za pogledati.
+
+
+###############################################################################
+####################   P11_04___Anonimnost_na_internetu   #####################
+###############################################################################
+
+    Ovde mi je ostao samo jos "onion services" da shvatim kako se salju.
+    SVE ostalo razumem i znam.
+

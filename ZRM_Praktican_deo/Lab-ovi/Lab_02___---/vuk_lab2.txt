@@ -1,0 +1,82 @@
+// UDP port-ovi(UDP portovi su sporiji, pa zato razmotri prvih 200 samo)
+sudo nmap -sU -sV --top-ports 200 10.12.119.2
+sudo nmap -sU -sV --top-ports 200 10.12.119.2 | grep "open*"
+sudo nmap -Su -sV -p 53,67,68,135,138,139,162,445,631,1434,1900 10.12.119.2
+
+// TCP port-ovi
+sudo nmap -sT -p- 10.12.119.2
+
+// Otkrij operativni sistem
+sudo nmap -O 10.12.119.2
+
+// Isto OS otkrij
+sudo nmap -A 10.12.119.2
+
+
+
+
+// hping3
+sudo hping3 -c 1 -V -p 21,22,80,443 -s 5050 -A
+
+-c  1 // count 1
+-V    // Verbose
+-p    // Ports <ports>
+-s    // source port <number>
+-A    // ACK
+
+
+
+// tmux
+// CTRL + b + o
+// CTRL + b + "
+// CTRL + b + %
+// CTRL + b + [   // Enter Emacs mode
+// q to quit "Emacs mode"
+
+sudo p0f -i eth1          // iz prvog  terminala sa VM1
+ssh student@10.12.119.2   // iz drugog terminala sa VM1
+
+
+-------------------------------------------------------------------------------
+
+// Dobij SVE OTVORENE port-ove
+
+    sudo nmap -p- 10.12.119.2 --open
+
+
+############################
+### Objasnjenje sintakse ###
+############################
+
+-sU
+s = scan
+U = UDP scan
+
+-sT
+s = scan
+T = TCP connect scan
+
+-sS
+s = scan
+S = SYN scan
+
+-sV
+s = service
+V = version detection
+
+Here s does not literally mean scan. It is just part of the historical flag
+name. V means version.
+
+-O
+O = operating system detection
+
+-A
+A = aggressive scan mode
+
+-p
+p = ports
+
+-p-
+means all ports.
+
+-------------------------------------------------------------------------------

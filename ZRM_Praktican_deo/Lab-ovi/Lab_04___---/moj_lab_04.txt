@@ -1,0 +1,131 @@
+
+    sudo iptables -t nat -A POSTROUTING -j MASQUERADE
+
+POSTROUTING se desava nakon ruting odluke, ali PRE nego sto paketi izadju.
+
+"MASQUERADE" overwrite-uje source_IP u IP ka outgoing interfejs-u.
+
+// Efektivno
+
+originalno:
+    client_IP -> 192.168.x.2
+
+nakon MASQUERADE:
+    IP_mog_racunara -> 192.168.x.2
+
+
+Zasto je ovo neophodno?
+
+Bez MASQUERADE:
+
+    client -> moj_racunar -> 192.168.x.2
+
+
+
+-------------------------------------------------------------------------------
+
+no-dhcp-interface=                  // 
+server=147.91.8.6
+no-hosts                            // Ignorisi /etc/hosts
+addn-hosts=/etc/dnsmasq.hosts       // Koristi ovaj hosts fajl
+
+
+unutar: etc/dnsmaq.hosts:
+    192.168.x.3 student.etf.bg.ac.rs
+    192.168.x.3 etf.bg.ac.rs
+
+
+
+no-dhcp-interface=
+
+
+    Normally this directive disables DHCP on a specific interface, for example:
+
+        no-dhcp-interface=eth0
+
+    With nothing after the equals sign, behavior depends on the parser version.
+    Some versions treat it as "no interface specified" and effectively ignore
+    it. Others may treat it as a configuration mistake.
+
+    Practically speaking, this line is suspicious and usually wrong. It
+    probably should name an interface.
+
+    Purpose when used correctly:
+
+    Prevents dnsmasq from serving DHCP on that interface while still allowing
+    DNS.
+
+
+
+server=147.91.8.6
+
+    This defines an upstream DNS server.
+
+    Meaning:
+
+    When dnsmasq cannot answer a DNS query locally, it forwards the query to
+    147.91.8.6.
+
+    So dnsmasq acts as a caching resolver or forwarder.
+
+
+    Flow:
+        client -> dnsmasq
+        dnsmasq -> 147.91.8.6
+        147.91.8.6 -> dnsmasq
+        dnsmasq -> client
+
+
+Line 3
+
+    no-hosts
+
+    This disables reading the system hosts file.
+
+    Normally dnsmasq automatically reads:
+
+        /etc/hosts
+
+    Example normally:
+
+    127.0.0.1 localhost
+    192.168.1.10 printer
+
+    With no-hosts:
+
+    dnsmasq ignores /etc/hosts completely.
+
+    So only explicitly configured hosts will resolve locally.
+
+
+addn-hosts=/etc/dnsmasq.hosts
+
+    This adds an alternative hosts file.
+
+    Format is identical to /etc/hosts:
+
+    Example:
+
+        192.168.1.2 server1
+        192.168.1.3 server2
+
+    dnsmasq will resolve these names locally.
+
+    Important detail:
+
+    Because of no-hosts:
+
+    only /etc/dnsmasq.hosts is used
+    /etc/hosts is ignored
+
+    Overall behavior
+
+    dnsmasq will:
+
+    Resolve names in /etc/dnsmasq.hosts locally
+
+    Ignore /etc/hosts
+
+    Forward everything else to 147.91.8.6
+
+    Possibly mis-handle DHCP due to the empty interface line

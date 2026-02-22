@@ -1,0 +1,289 @@
+$sudo du -sh /var/logs/journal
+$journalctl --disk-usage
+
+# Ovo BRISE log-ove starije od <time>(s(defalt), m, h, d, weeks, months, years)
+$journalctl --vacuum-time=2d
+$journalctl --vacuum-time=2h
+$journalctl --vacuum-time=2m
+
+# Ovo BRISE log-ove manje od <size>(K, M, G, T)
+$journalctl --vacuum-size=100M
+
+###############################################################################
+#################################   HISTORY   #################################
+###############################################################################
+
+$echo $HISTFILE  # Ovo je fajl u kome se cuvaju komande, kod mene je /dev/null
+$echo $HISTSIZE  # Ovo je broj poslednjih komandi koje se cuvaju u tren. sesiji
+$echo $HISTFILESIZE # broj LINIJA
+
+########################
+### Iskljuci history ###
+########################
+$HISTSIZE=0
+$export HISTIFLE=0
+
+# ili ovako
+$unset HISTIFLE=0
+
+# ili ovako
+$set +o history   # Disable (da, '+' je za DISABLE)
+$set -o history   # Enable
+
+# ili ovako
+$shopt -ou history   # Disable (da, '+' je za DISABLE)
+$shopt -os history   # Enable
+
+
+
+
+# Nekada se komande ne zapisuju unutar HISTFILE-a ukoliko pocinju sa <Space>
+$ cat /etc/passwd
+
+
+
+#######################
+### Izbrisi history ###
+#######################
+
+$history -c
+$history -w  # Da se promene UPISU(write) na disk
+
+
+Medjutim, ovo ce da izbrise istoriju samo trenutne sesije, da bismo POTPUNO
+unistili history, mora ovako:
+
+    root@target:/# cat /dev/null > ~/.bash_history && history -c && exit
+
+Takodje mozemo da koristimo "kill" komandu da exit-ujemo sesiju BEZ da cuvamo
+history.
+
+    root@target:/# kill -9 $$
+
+
+###############################################################################
+################################   LOG FILES   ################################
+###############################################################################
+
+Neki od log fajlova:
+
+    1. /var/log/auth.log     // Authentication
+    2. /var/log/cron.log     // Cron Jobs
+    3. /var/log/maillog      // Mail
+    4. /var/log/httpd        // Apache
+
+
+Naravno, mozemo da ih samo izbrisemo sa "rm", ali to je red-flag. Neko bi lako
+mogao da sazna da smo pokusali da uradimo nesto nelegalno na sistemu i mozda bi
+dublje zasli u istrazivanje i tako nas pronasli.
+
+Da bisom to sredili, elegantnije je da ispraznimo te fajlove, umesto da ih
+potpuno izbrisemo. To radimo:
+
+    # truncate -s 0 /var/log/auth.log
+
+("truncate" nije dostupan na svim sisemima. Imaj to na umu)
+
+Slicnu stvar mozemo da uradimo i ovako:
+
+    # echo '' > /var/log/auth.log
+    # > /var/log/auth.log
+    # cat /dev/null > /var/log/auth.log
+    # true | tee /var/log/auth.log
+
+Ili ovako:
+
+    # dd if=/dev/null of=/var/log/auth.log
+
+    0+0 records in
+    0+0 records out
+    0 bytes (0 B) copied, 6.1494e-05 s, 0.0 kB/s
+
+
+Takodje, mozemo da "prezvrljamo" ceo log fajl, ali i ovo je "red flag".
+
+    # shred /var/log/auth.log
+
+
+A mozemo i ovako. Ako dodamo "-zu" opcije, ovo ce da uradi shredding, potom da
+ga prepise 0-ama da bi sakrio da je radjen shredding.
+
+    root@target:/# shred -zu /var/log/auth.log
+
+Najbolje je nakon ovog "shred -zu" da se uradi dodatno brisanje sa:
+
+    cat /dev/null > /var/log/auth.log
+
+
+
+
+
+
+auth.log formatting is controlled by the syslog daemon, typically rsyslog or
+systemd-journald, and in rsyslog you change it by defining a template such as
+RSYSLOG_TraditionalFileFormat or RSYSLOG_FileFormat in /etc/rsyslog.conf or
+/etc/rsyslog.d/*.conf and then restarting the service.
+
+Yes, someone with root access could change the logging format going forward and
+could also modify existing log files retroactively, but that would require
+elevated privileges and would usually leave traces in shell history, config
+timestamps, package logs, or integrity monitoring systems if those are enabled.
+
+
+
+
+// Here-document
+[vuk@magic ~]$ cat << 'HEHE'
+"nesto"
+"drugo"
+"trece"
+HEHE                // Ovde sam otkucao <CR>, tj. <Enter> taster
+"nesto"
+"drugo"
+"trece"
+[vuk@magic ~]$
+
+
+
+
+[vuk@magic Proba]$ sudo bash << 'EOF'
+for FILE_TO_CLEAN in $(find /home/vuk/Documents/3_______Fakultet/ZRM/Proba/ -type f)
+> do
+> cp /dev/null "$FILE_TO_CLEAN"
+> done
+> EOF
+[sudo] password for vuk:
+[vuk@magic Proba]$
+
+
+history -c
+
+
+???????????????
+??? Pitanje ???
+???????????????
+    So is the purpose of "here-documnts" ONLY to be written on the command line
+    as opposed to writing them in files?
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ 
+$$$$$$$$$$$$    Odgovor    $$$$$$$$$$$$
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+    No, not only for the command line. Here-documents let you provide
+    multi-line input to any command, whether in a script file or interactively.
+    You can use them inside a script to embed data, create temporary scripts,
+    or feed commands without creating separate files.
+
+    The main purpose is to avoid needing an external file for input; they are
+    just a convenient way to pass blocks of text or code to commands.
+
+
+
+
+
+-------------------------------------------------------------------------------
+// Purpose
+Sure. Imagine you want to feed a block of text to a command like `cat` or a
+script. Without here-documents, you’d need temporary files.
+
+Example 1: feeding text to `cat`
+
+Without here-document:
+
+echo "line 1" > /tmp/temp.txt
+echo "line 2" >> /tmp/temp.txt
+echo "line 3" >> /tmp/temp.txt
+cat /tmp/temp.txt
+rm /tmp/temp.txt
+
+With here-document:
+
+cat <<EOF
+line 1
+line 2
+line 3
+EOF
+
+---
+
+Example 2: creating a small script on the fly
+
+Without here-document:
+
+echo '#!/bin/bash' > /tmp/myscript.sh
+echo 'echo Hello' >> /tmp/myscript.sh
+chmod +x /tmp/myscript.sh
+/tmp/myscript.sh
+rm /tmp/myscript.sh
+
+With here-document:
+
+bash <<'SCRIPT'
+#!/bin/bash
+echo Hello
+SCRIPT
+
+---
+
+Example 3: feeding multiple commands to `mysql`
+
+Without here-document:
+
+echo "USE mydb;" > /tmp/sql.txt
+echo "SELECT * FROM users;" >> /tmp/sql.txt
+mysql -u root -p < /tmp/sql.txt
+rm /tmp/sql.txt
+
+With here-document:
+
+mysql -u root -p <<SQL
+USE mydb;
+SELECT * FROM users;
+SQL
+
+---
+
+So the key point: here-documents remove the need to create, write, and delete
+temporary files; the block of text goes straight into the command.
+
+
+
+
+
+Sure. Here’s an example of a script file using a here-document to generate a
+config and feed it to a command, all inline:
+
+Create a script file, say `generate_config.sh`:
+
+#!/bin/bash
+
+# generate a temporary config for a program
+
+myprogram --config-from-stdin <<EOF
+setting1=value1
+setting2=value2
+setting3=value3
+EOF
+
+# you don’t need to create a separate config file on disk
+
+When you run `bash generate_config.sh`, it passes the three lines of settings
+directly to `myprogram` without ever writing a file.
+
+Another example inside a script: creating a temporary script and running it
+immediately:
+
+#!/bin/bash
+
+bash <<'TEMP_SCRIPT'
+#!/bin/bash
+echo "Hello from the temporary script"
+echo "Today is $(date)"
+TEMP_SCRIPT
+
+No files are created; the here-document lets you embed a whole mini-script
+directly in your main script.
+
+It keeps your code self-contained and avoids cluttering /tmp or other
+directories.

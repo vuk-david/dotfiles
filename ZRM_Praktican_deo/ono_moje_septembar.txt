@@ -1,0 +1,398 @@
+#+TITLE: ZRM
+#+AUTHOR: Vuk Davidovic
+#+DATE: <2025-09-23 Tue>
+
+** P01-01 Faze napada (izvidjanje)
+Treba razlikovati:
+
+Vulnerability Scanning & Penetration Testing
+(Skeniranje slabosti   & Penetraciono Testiranje)
+
+*** Vulnerability Scanning
+To je automatizovano skeniranje slabosti na POZNATE napade
+
+*** Penetration Testing
+Za razliku od toga, Penetration Testing je skeniranje slabosti na jos
+neotkrivene slabosti!
+
+Odnosno "Vulnerability Scanning" je podskup skupa "Penetration Testing".
+Odnosno "Vulnerability Scanning" je prvi korak u "Penetration Testing"-u, ali
+se pored toga ljudi koji su obuceni za takve poslove i koji razumeju
+arhitekturu i infrastrukturu, trude da "rucno" upadnu.
+
+*** 5 Faza etickog hakovanja
+1. Izvidjanje i Footprinting (Reconnaissance & footprinting)
+2. Skeniranje i numerisanje  (Scanning & enumeration)
+3. Dobijanje pristupa        (Gaining Access)
+4. Odrzavanje pristupa       (Maintaining Access/Escalating privileges)
+5. Ciscenje tragova          (Clear traces)
+
+**** Faza 1 - Izvidjanje
+***** Generalno
+Prikupljanje podataka na indirektan nacin. Preko drustvenih mreza, mejlova,
+itd. Ovo ne podrazumeva bilokakvo kontaktiranje firme od strane hakera i ovo je
+nesto sto je potpuno legalno.
+
+***** Detaljnije
+Cilj je da se skupe SVE informacije o sitemu.
+
++ Passive (public info/repositories)
++ Active  (engaging the target: calls, emails, ...)
++ OSINT
+
+Te informacije mogu biti:
+1. Gde je lokacija firme
+2. Ko su zaposleni
+3. Koliko ima zaposlenih
+4. Koliko je firma bogata(APR)
+5. Na koji nacin je firma povezana na internet
+6. Koji su njeni uredjaji dostupni preko interneta
+7. Na koji nacin se cuvaju ti uredjaji fizicki?
+8. itd...
+
+***** Footprinting
+
+**** Faza 2 Skeniranje i numerisanje
+***** Generalno
+Koji OS, koji OS mejl servera, koji softver je u pitanju. Da li se za main
+server koristi Apache i koja verzija, itd.
+
+U Madjarskoj je vec skeniranje NELEGALNO, tj. krivicno delo.
+
+**** Faza 3 Dobijanje pristupa
+***** Generalno
+Npr. skeniranjem smo utvrdili da se koristi neka verzija Linuxa i onda cemo
+samo da iskoristimo vec poznate "Exploits" da iskoristimo te slabosti i
+jednostavno upadnemo u sistem.
+
+**** Faza 4 Odrzavanje pristupa (i eskalacija privilegija)
+***** Generalno
+Horizontalno i vertikalno kretanje.
+
+****** Horizontalno kretanje
+Ukoliko je uspeo da dodje do sifre JEDNOG korisnika, horizontalna eskalacija
+privilegija bi znacila da pokusa da dodje do dodatnih naloga u tom sistemu.
+
+****** Vertikalno kretanje
+Ovo je po dubini. Odnosno, pokusavamo da dodjemo do naloga koji imaju vece
+privilegije, tj. do npr. "admin" naloga ili "root pristup".
+
+Npr. radicemo "Buffer Overflow" kako bi se upalo u sistem.
+
+
+
+
+
+
+// Predavanja 2 (Scanning)
+
+** P02-03 Skeniranje "nmap"
+
+DOBRO zapamti i nauci i shvati koja vrste skeniranja se nece nista zabeleziti
+odakle je izvrseno zapravo skeniranje.
+
+*** Ping with "ping" or Ping with "nmap"
+1. $ping 8.8.8.8
+2. $nmaped -sP -v 8.8.8.8
+
+8.8.8.8 is a Google-DNS that responds to "ICMP echo" requests, i.e. "ping".
+
+*** Full-Open Scan
+Full three-way TCP handshake
+Detected by IDS and FW
+
+#+BEGIN_SRC bash
+nmap -sT -v <target_IP_Address>
+#+END_SRC
+
+Ovime iznad pokusava sve port-ove, tj. od 1-255, redom.
+
+Ako su otvoreni portovi: 22(SSH) i 80(HTTP), onda ce samo Server na kome su
+otvoreni samo ti portovi, odgovoriti upravo samo na takve zahteve.
+
+Ovime mi znamo koji su svi port-ovi koji su otvoreni.
+
+Problem je sto Server ZNA ko pokusava da skenira sve port-ove jer zna nasu IP
+adresu.
+
+Dodatan problem jeste da time sto smo USPESNO uspostavili TCP handshake, Server
+ce napraviti "log" sa nasom IP adresom, odnosno ostace "trag" da smo mi
+pokusavali da skeniramo ili da smo se nekad "nakacili" TCP handshake-om.
+
+*** Stealth, Half-Open scan
+
+#+BEGIN_SRC bash
+nmap -sS -v <target_IP_address>
+#+END_SRC
+
+*** Xmas tree scan
+
+#+BEGIN_SRC bash
+nmap -sX -v <target_IP_address>
+#+END_SRC
+
+*** FIN Scan
+#+BEGIN_SRC bash
+nmap -sF -v <target_IP_address>
+#+END_SRC
+
+*** Null Scan
+#+BEGIN_SRC bash
+nmap -sN -v <target_IP_address>
+#+END_SRC
+
+*** Idle Scan(1)
+#+BEGIN_SRC bash
+nmap -Pn -p- -sI zombie target
+#+END_SRC
+
+*** ACK Scanning
+#+BEGIN_SRC bash
+nmap -sA -T4 target
+#+END_SRC
+
+*** UDP Scanning
+Google's QUIC uses UDP.
+
+*** Alat umesto nmap-a je "hping3" tool
+
+
+
+
+
+
+** P03-01 Snimanje saobracaja "Wireshark"
+*** hping3 (siromasniji "rodjak" programa "nmap")
+Zgodno da se proveri da li na nekoj putanje postoji Firewall ili da se na neki
+nacin vrsi neka manipulacija paketa.
+*** OS fingerprinting
+Mozemo da koristimo "nmap"
+**Can** detect kernel version, but **cannot** detect distribution
+
+Postoje aktivni i pasivni alati za skeniranje, tj. za "OS fingerprinting".
+
+*** Postoje RAZLICITE verzije TCP-a!! (BOOM)
+Jedina stvar gde se razlikuju nije zaglavlje, zaglavlja su ista!
+Vec mehanizmi kontrole zagusenja, odnosno mehanizmi manipulacije prozorima i
+slicne stvari koje postoje u okviru TCP protokola.
+
+Poslednja verzija je izasla 2021. zove se TCP BBR(tako nesto). Obe verzije su
+izasle iz Google-a.
+
+Google je izmislio QUIC protokol koji je zasnovan na UDP-u i ima svoje
+mehanizme zagusenja.
+
+1. BBR
+2. BBR2
+3. Qubic (kjubik?)
+4. Rino
+5. ... (ima ih 20-ak)
+
+Razlicite verzije su default-ne u razlicitim operativnim sistemima.
+
+*** Aktivno skeniranje
+Pored TCP-a, ima i drugih protokola koji ostavljaju svoj karakteristicni
+"otisak", npr.:
+
+1. DHCP
+2. ICMP zahtevi
+3. HTTP paketi
+4. ...
+
+na osnovu _tih informacija_ moze da se **pretpostavi** koji je Operativni
+Sistem u pitanju.
+
+Ovom komandom dobijamo procenu koji bi to mogao da bude Operativni Sistem.
+(probaj da SNIMIS ovaj saobracaj prilikom skeniranja, putem Wireshark-a i onda
+proanaliziraj sta on to sve salje i sta vraca)
+#+BEGIN_SRC bash
+nmap -O target
+#+END_SRC
+
+
+Jedan deo pitanja na prakticnom delu jeste da dobijemo IP adresu, a mi treba da
+zakljucimo ovim "OS fingerprinting-om" koji je operativni sistem u pitanju.
+
+*** Pasivno skeniranje (pOf)
+Different OSs use different initial TTL value or initial TCP window size
+
+pOf funkcionise tako sto ti pokrenes pOf, a onda normalno posetis stranicu koju
+zelis da napadnes, a pOf u pozadini skenira i analizira sav dolazni saobracaj
+sa te stranice i pokusava da zakljuci sto vise informacija.
+
+**** Banner Grabbing (precizniji)
+Ovo su informacije koje je administrator sistema _zaboravio_ da skloni!
+
+1. Link: https//www.netcraft.com
+2. XProbe(Linux)
+3. Maltego
+
+OpenSSL bug zvani "Hard bleed"(tako nesto)
+
+*** nmap scripts (automatizacija procesa)
+Allows users to write(and share) simple scripts (using the Lua programming
+language) to automate a wide variety of networking tasks.
+
+Link:
+https://nmap.org/nsedoc/
+
+Ima jedan video na ovom sajtu, gde covek koji je pisao ceo koncept nmap
+script-i, on je analizirao 1M Microsoft-ovih adresa (traje ~25min)
+
+Pokazuje sta sve nmap skripte mogu da urade i do kog nivoa detalja idu.
+
+*** Sniffing Traffic
+
+Prvi deo prakticnog ispita je Sniff-ovanje.
+
+1. Wireshark/tshark(based on dumpcap)
+2. tcpdump (less protocol decoding)
+3. WinDump
+4. OmniPeek
+5. DSniff
+6. EtherApe
+7. NetWitness
+
+Moramo da naucimo da citamo pcap fajlove, tj. pojedinacne pakete u Wireshark-u
+koji su poslati, a koji ce najverovatnije sadrzati u sebi neku lozinku koju
+cemo morati da pronadjemo za poene.
+
+** P03-02 Prikupljanje podataka
+Otvoreni PORT-ovi jesu tacke preko kojih se najcesce napadaju uredjaji.
+
+Prikupljanje podataka otkriva KO prikuplja podatke i u nekim zemljama—poput
+Madjarske—to i jeste ilegalno.
+
+*** SNMP (Simple Network Management Protocol)
+1. v1
+2. v2
+3. v3
+
+*** Transport protocol UDP
++ port 161: send and receive
++ port 162: traps
+
+*** SMTP (smpt_enum alat)
+
+*** LDAP -- TCP/UDP 389
+Tools:
+1. Jxplorer
+2. LDAP admin tool
+3. LDAP Account manager
+4. Active directory explorer
+
+*** Web server enumeration
+1. Screaming Frog
+2. Apify
+3. DeepCrawl
+4. Wild Shark
+5. Scraper
+
+DAST alati "Dynamic Application Security Tools"
+
+Postoji neka knjiga od 900 strana. Pitaj profesora koja je to knjiga.
+
+*** SMB Enumeration (ako je napadac vec usao u mrezu) [Server Message Block]
+Koristi se da se dele fajlovi, printeri i slicne stvari.
+
+*** NetBIOS
+Used to access information from a remote computer LAN
+
+Scanning tools:
+1. SuperScan
+2. Hyena
+3. Winfingerprint
+4. NetBIOS enumerator
+5. NSauditor
+
+
+
+** P03-Mrezni napadi MAC_ARP spoofing
+
+*** (oblast) Network Attacks
+Ovime se najcesce radi Man-in-the-middle napad.
+
+**** MAC Exploatation
+#+BEGIN_SRC shell
+macchanger -s wipzsu
+
+sudo ip link set dev wlp2s0 down
+sudo macchanger -r wlp2s0
+
+sudo ip link set dev wlp2s0 up
+ifconfig wlp2s0
+
+sudo ip link set dev wlp2s0 down
+sudo macchanger -p wlp2s0
+
+sudo ip link set dev wlp2s0 up
+ifconfig wlp2s0
+#+END_SRC
+
+***** MAC Flooding
+Fill the switch's MAC table with fake MAC addresses(macof tool):
+https://kalilinuxtutorials.com/macof
+
+Poslusaj ovo ponovo(21:00 na klipu P03-03)
+
+
+** P04-01 DHCP-IP-TCP napadi
+**** ARP protocol Exploatation
+#+BEGIN_SRC sh
+arp
+#+END_SRC
+
+1. ARP poisoning tools: Ettercap, Cain & Abel
+2. IP DHCP snooping and ARP snooping for avoiding these attacks
+
+Gracious ARP. napadac sam, bez pitanja, posalje paket i kaze:"Ja sam MAC adresa
+za tu i tu IP adresu"
+
+ARP spoofing je prva laboratorijska vezba, i to je to.
+
+**** DHCP Exploatation
+**** DHCP Starvation attack
+tools: dhcpstarv, yersinia
+
+**** IP and TCP based attacks
+U okviru TCP-a postoji nesto sto se zove RTO(Retransmission Timeout), depends
+on RTT(Round Trip Time).
+
+**** Firewall je 5. lab vezba (koliko ih ima???)
+
+
+**** Shrew DoS attack (neki nas covek radio)
+
+**** SYN Flooding
+**** IP address spoofing
+
+
+** P04-02 DNS napadi
+*** DNS based attacks
+
+*** DNS cache poisoning (Ima lab vezba iz ovog. 4. vezba, valjda)
+**** 8:00 prica o CDN-ovima
+**** Kaminsky DNS poisoning attack 13:31
+
+https://www.youtube.com/watch?time_continue=940&v=qftKfFVHVuY&feature=emb_title
+
+*** DNS tunneling / data exfiltration
+(ovo treba da znamo) [Srednje teski zadatak]
+
+Alati:
+**** High throughput tools:
+1. DNScat
+2. DNS2TCP
+3. lodine
+
+**** Low throughput tools: (Uglavnom koriste malmeri)
+1. DNS messenger
+2. MULTIGRAIN
+3. Wekby
+
+
+*** DNS fast fluxing    (ovo je valjda poslednji Lab)
+
+*** Domain generation algorithms (u moderniji malwer-ima)
+
+** P05_01__Preuzimanje sesija (Session hijacking) [Network defense tools]

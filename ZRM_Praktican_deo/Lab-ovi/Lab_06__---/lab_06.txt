@@ -1,0 +1,6 @@
+
+echo "moja poruka" > file1.txt                      // Upis obican
+certutil -hashfile file1.txt.                       // Proverava hash
+
+echo "vojna tajna" > file1.txt:Secret-File.txt .    // Upis tajne
+notepad file1.txt:SecretFile.txt.                   // Citanje

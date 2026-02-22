@@ -1,0 +1,73 @@
+Prvo se uspostavlja TLS konekcija sa OR1 ruterom. Taj OR1 moze biti nasumicno
+izabran od strane Tor browser-a, ili moze biti izabran manuelno.
+
+Kada se TLS konekcija uspostavi, klijent(tj. "ja") saljem:
+
+    1. JAVNU vrednost base + modulus
+    2. Vrednost koja je dobijena: base^moj_tajni_kljuc % modulus
+
+Javne vrednosti "base" i "modulus" su PROSTI brojevi koji su poznati na Tor
+browser-u. (Valjda)
+
+"modulus" MORA da bude neki veeeeeliki prost broj.
+(i ima ovo nekakve veze sa "prostim korenom", ali nisam zapamtio)
+
+Ove dve stvari si KRIPTOVANE "RSA" algoritmom, konkretno JAVNIM kljucem OR1
+rutera.
+
+// MY_intermediate_value  = base^MY_secret  % modulus
+// OR1_intermediate_value = base^OR1_secret % modulus
+
+
+    Ja ---- E( [base, modulus, MY_intermediate_value] ) ----> OR1
+
+    Ja <--- E( [OR1_intermediate_value, hash_of(K1)]) --- OR1
+
+Sada ja na osnovu:
+
+    base^OR1_secret_key % modulus     <==>  OR1_intermediate_value
+
+Mogu da izracunam K1:
+
+    K1 = OR1_intermediate_value^MY_intermediate_value % modulus
+
+
+Vazno je primetiti da su ove dve stvari EKVIVALENTNE, odnosno da daju ISTI
+rezultat:
+
+    K1 = OR1_intermediate_value^MY_intermediate_value % modulus
+    K1 = MY_intermediate_value^OR1_intermediate_value % modulus
+
+ --------------         --------------    
+ |   b        |         |  a         |
+ |  a   mod c |   <===> | b   mod c  |
+ |            |         |            |    
+ --------------         --------------
+
+Sta je "K1"?
+
+    K1 je kljuc koji ce biti koriscen kao SIMETRICNI kljuc, a koji je
+    izgenerisan pomocu Diffie-Hellman algoritma.
+
+
+    Odnosno, OR1 ruter je primio od mene: [base, modulus, base^MY_secret ^ mod]
+
+    Onda je OR1 izabrao svoj "OR1_secret" koji je PROST broj, a onda je uradio:
+
+        MY_intermediate_value  = base^MY_secret  % modulus
+
+        OR1_intermediate_value = base^OR1_secret % modulus
+
+
+        K1 = MY_intermediate_value^OR1_intermediate_value % modulus
+
+    A onda je napravio HASH od K1 koristeci SHA-256 algoritam.
+
+
+        K1 -------- hash_of(K1) ----> digest(fingerprint)
+
+
+Kada JA dobijem OR1_intermediate_value i hash_of(K1), ja cu da izgenerisem K1
+a onda uz pomoc dobijenog "hash_of(K1)" moram da proverim da li je ta vrednost
+ista kao hash vrednosti kljuca koji sam ja izracunao.
+

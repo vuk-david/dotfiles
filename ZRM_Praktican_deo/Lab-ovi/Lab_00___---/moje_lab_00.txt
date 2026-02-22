@@ -1,0 +1,88 @@
+// Koriscenjem GOOGLE "dig" alata:
+// https://toolbox.googleapps.com/apps/dig/)
+
+
+$dig cisco.com
+
+1. Simbolicka imena i IP adrese web servera: 72.163.4.185
+2. Simbolicke i IP adrese mejl servear: 
+3. Simbolicke i IP adrese DNS servera:
+
+
+
+# Get IPv4 addresses (A records)
+dig cisco.com A
+
+# Get IPv6 addresses (AAAA records)
+dig cisco.com AAAA
+
+# Get mail servers
+dig cisco.com MX
+
+# Get name servers
+dig cisco.com NS
+
+
+
+[vuk@magic ~]$ dig cisco.com NS
+
+; <<>> DiG 9.20.16 <<>> cisco.com NS
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 38750
+;; flags: qr rd ra; QUERY: 1, ANSWER: 5, AUTHORITY: 0, ADDITIONAL: 10
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 1232
+; COOKIE: ef52121024bf5de001000000698b0756dbecb926d588a5e2 (good)
+;; QUESTION SECTION:
+;cisco.com.                     IN      NS
+
+;; ANSWER SECTION:
+cisco.com.              1800    IN      NS      a3-64.akam.net.
+cisco.com.              1800    IN      NS      ns1.cisco.com.
+cisco.com.              1800    IN      NS      ns2.cisco.com.
+cisco.com.              1800    IN      NS      ns3.cisco.com.
+cisco.com.              1800    IN      NS      a28-64.akam.net.
+
+;; ADDITIONAL SECTION:
+ns1.cisco.com.          690     IN      A       72.163.5.201
+ns2.cisco.com.          1317    IN      A       64.102.255.44
+ns3.cisco.com.          146376  IN      A       173.37.146.41
+a3-64.akam.net.         83761   IN      A       96.7.49.64
+a28-64.akam.net.        82387   IN      A       95.100.173.64
+ns1.cisco.com.          128250  IN      AAAA    2001:420:1101:6::a
+ns2.cisco.com.          9550    IN      AAAA    2001:420:2041:5000::a
+ns3.cisco.com.          9550    IN      AAAA    2001:420:1201:7::a
+a3-64.akam.net.         83401   IN      AAAA    2600:1408:1c::40
+
+;; Query time: 16 msec
+;; SERVER: 192.168.1.1#53(192.168.1.1) (UDP)
+;; WHEN: Tue Feb 10 11:24:22 CET 2026
+;; MSG SIZE  rcvd: 361
+
+
+
+
+
+
+-------------
+Na RIPE-u, tj. www.ripe.net, na whoissearch-u za moju IP Adresu: 79.101.74.116
+
+route:            79.101.0.0/16
+descr:            TELEKOM-SRBIJA
+descr:            Telekom Srbija Internet Backbone Network
+origin:           AS8400
+mnt-by:           AS8400-MNT
+mnt-by:           TELEKOM-MNT
+created:          2023-05-04T07:16:42Z
+last-modified:    2023-05-04T07:16:42Z
+source:           RIPE
+
+
+
+Onda idemo na:
+https://stat.ripe.net/about/
+
+Ipak ovo:
+https://stat.ripe.net/

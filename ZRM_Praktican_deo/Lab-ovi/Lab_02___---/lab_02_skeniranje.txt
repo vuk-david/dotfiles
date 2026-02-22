@@ -1,0 +1,11 @@
+
+nmap -sT <ip>  // Full TCP scan
+nmap -sS <ip>  // Stealht
+
+nmap -sN <ip>  (NULL)
+nmap -sF <ip>  (FIN)
+nmap -sX <ip>  (Xmas)
+
+nmap -O <ip>   // Otkrij OS
+
+nmap -A <ip>   // Agresivno

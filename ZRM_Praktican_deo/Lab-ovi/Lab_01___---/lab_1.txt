@@ -1,0 +1,154 @@
+~~~~~~~~~~~~~~~~~
+~~~ SNMP pcap ~~~
+~~~~~~~~~~~~~~~~~
+    1. Verzija protokola:   v2c
+    2. Community parametar: si2019
+
+
+
+~~~~~~~~~~~~~~~~~~~
+~~~ Telnet pcap ~~~
+~~~~~~~~~~~~~~~~~~~
+    username: kkoorriissnniikk      // Neispravno
+    username: korisnik              // ISPRAVNO
+    password: veomasigurnalozinka
+
+
+
+~~~~~~~~~~~~
+~~~ HTTP ~~~
+~~~~~~~~~~~~
+    username: Username      // Tacno
+    password: Qwi89R12m     // Tacno
+    
+    Po port-u: 443
+
+    Stranica:
+    <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2 Final//EN"><html>\n
+    <title>Directory listing for /</title>\n
+    <body>\n
+        <h2>Directory listing for /</h2>\n
+        <hr>\n
+            <ul>\n
+                <li><a href="SimpleAuthServer.py">SimpleAuthServer.py</a>\n
+                <li><a href="SNMP.pcapng">SNMP.pcapng</a>\n
+                <li><a href="telnet.pcapng">telnet.pcapng</a>\n
+                <li><a href="TLS.pcapng">TLS.pcapng</a>\n
+            </ul>\n
+        <hr>\n
+    </body>\n
+    </html>\n
+
+
+~~~~~~~~~~~
+~~~ TLS ~~~
+~~~~~~~~~~~
+    Koji algoritmi kriptovanja se koriste u svim sesijama:
+
+        filter: tls.handskake.ciphersuite
+
+    -------------
+    --- TLSv2 ---
+    -------------
+    Cipher Suite: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (0xc02f)
+
+    ECDHE       - Ephemeral elliptic curve Diffie-Hellman key exchange was used
+                  to agree on a shared session key.
+
+    RSA         - The server authenticated itself using its RSA certificate.
+
+    AES_128_GCM - All application data is encrypted with AES-128 in
+                  Galois/Counter Mode.
+
+    SHA256      - The hash function used for integrity (in AEAD, part of the
+                  GCM construction).
+
+    -------------
+    --- TLSv3 ---
+    -------------
+        Cipher Suite: TLS_AES_128_GCM_SHA256 (0x1301)
+        AES_128_GCM - Bulk encryption: all application data is encrypted using
+                      AES with 128-bit keys in Galois/Counter Mode (AEAD). This
+                      also handles integrity/authentication.
+
+        SHA256      - Hash used in key derivation (HKDF) and for the AEAD
+                      construction.
+
+
+        Cipher Suite: TLS_AES_128_GCM_SHA384        // Ovaj nisam nasao
+
+
+~~~~~~~~~~~
+~~~ SSH ~~~
+~~~~~~~~~~~
+
+    Komunicira se sa uredjajem:
+        Destination Address: 172.16.0.95 (Ubuntu-4ubuntu2.4)
+
+    Kriptografski algoritmi korisceni za zastitu te sesije?
+        1. Key Exchange (method:curve25519-sha256@libssh.org)
+        2. SSH Version 2 (encryption:chacha20-poly1305@openssh.com mac:<implicit> compression:none)
+
+
+    Sesija trajala:
+        lasted about 6.57 seconds
+
+
+
+~~~~~~~~~~~~
+~~~ POP3 ~~~
+~~~~~~~~~~~~
+
+    IP adrese:
+        + klijent: 147.91.1.120 
+        + klijent: 147.91.8.8                   // Promaklo
+
+        + server: 91.187.154.108
+
+
+    // Server-Hello unutar "TLSv3" paketa
+    Cipher Suite: TLS_RSA_WITH_AES_128_CBC_SHA          (0x002f)
+    Cipher Suite: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (0xc02f)
+    Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 (0xc02b)
+
+
+~~~~~~~~~~~~~~~
+~~~ Malware ~~~
+~~~~~~~~~~~~~~~
+    Adresa command centra: 45.80.37.176             // Dato
+
+
+    i)
+    Adresa bota:
+        + 147.91.72.158
+
+
+    Protokoli:
+        + RTCP
+        + UDP
+        + TCP
+
+
+    ii)
+        + Paketi dolaze svakih 0.1 milisekundu
+
+        + Napad pocinje: 981. paketom na 4813 sekundi i 045199584 milisekunde
+        + Vrsta napada:  Zatrpavanje zrtve UDP paketima. (DDoS)
+        + Intenzitet:    18850 paketa u sekundi, a svaki je 554B(tj. ~9.96MB/s)
+        + Adresa zrtve:  103.95.221.167
+        + Po port-u:     80
+
+
+
+    iii)
+        Paket: 981
+
+        Komandom:       Data: 00120000001e0901675fdda7200107023830
+
+            Sto kad se prevede u decimalan oblik bajt po bajt:
+                0 0 18 0 0 30 9 1 103 95 221 167 32 1 7 2 56 48
+                                  ^^^^^^^^^^^^^^
+                                        |
+                                        |
+             (sadrži IP adresu žrtve)----
+

@@ -1,0 +1,11 @@
+imas pristup VM1, na VM3 se nalazi veb server, na VM2 je i VM6 je admin koji se loguje
+1. za domen openai.com otkrij ip adrese NS i koja je firma vlasnik (dig)
+2. otkriti sve otvorene portove VM3 (nmap, dobijes 2 porta za veb servis + xy nekih default, 1 se hostuje aplikacija za grupu 1, na drugom je za grupu 2)
+3. otkriti lozinku nekog korisnika x (SQLi na veb serveru)
+4. ulogovati se tom lozinkom na windows masinu i otkriti lozinku korisnika y (dump SAM fajl, hashcat za dati dictionary)
+5. taj korisnik y se loguje takodje na VM2, ulogovati se na VM2 i otkriti lozinku korisnika z (/etc/shadow dump SHA512, hashcat za dictionary)
+6. postaviti filter da blokira ssh sa VM2 i pristup aplikaciji sa VM6 (ili tako nesto ne secam se ali isti princip, iptables deny/allow)
+7. obrisati sve logove i istoriju komanda
+
+ip table -I INPUT -p tcp --dport 22 -s 192.168.119.0/24 -j DROP
+ip table -A INPUT -p tcp --dport 22 -j ACCEPT

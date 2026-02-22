@@ -1,0 +1,20 @@
+// Ove dve stvari su iste
+sysctl net.ipv4.ip_forward
+cat /proc/sys/net/ipv4/ip_forward
+
+// Ovako se postavlja
+sudo sysctl -w net.ipv4.ip_forward=1
+
+
+
+Vežba 1 – Podešavanje jednostavnih pravila.
+Proveriti da li je sve dobro povezano.
+Sa računara VM1 uraditi ping 10.24.x.2
+Sa računara VM1 uraditi ping 10.34.x.3
+
+da
+
+
+
+Probati sa VM2 i VM3 ping na 192.168.1.100. Da li radi?  Ne
+

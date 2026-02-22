@@ -1,0 +1,667 @@
+iptables je user-space CLI tool.
+
+On komunicira sa KERNEL-om, preko netlink-a, i modifikuje KERNEL-ov Netfilter
+podsistem.
+
+Nakon sto izvrsis "iptables", pravila(rules) se nalaze u memoriji kernel-a(npr.
+na Heap-u "kernel" procesa, unutar njegovih internih struktura).
+
+
+Po default-u, konfiguracija se nalazi samo unutar memorije kernela. Ukoliko
+zelimo perzistenciju cak i nakon REBOOT-a, onda moramo da sacuvamo pravila u
+fajl koristeci komandu(jedna od ove dve):
+
+    iptables-save                // generalno
+    netfilter-persistent save    // Na Debian-u i Debian-olikim distribucijama
+
+
+Nakon REBOOT-a restore-ujes pomocu:
+    
+    iptables-restore
+
+ili preko distro servisa.
+
+
+
+"Netfilter" je kernel framework, a "iptables" je samo frontend alat za konfig.
+
+
+TABELA(table) je grupa LANACA(chains) za specijalnu svrhu.
+Primer:
+    TABELA "filter" za filtriranje paketa
+    TABELA "nat"    za nat-table-address-translation
+    TABELA "mangle" za izmenu paketa
+
+
+LANAC(chain) je ordered-list PRAVILA(rules).
+
+Paket prolazi LANCE u zavisnosti od "hook point"-a i Networking Stack-a.
+LANCI(chains) su:
+    + PREROUTING
+    + INPUT
+    + FORWARD
+    + OUTPUT
+    + POSTROUTING
+
+
+PRAVILO(rule) je (match + target).
+
+Ako se paket poklapa sa uslovima PRAVILA, onda se "target" izvsava.
+TARGET-i su:
+
+    + ACCEPT
+    + DROP
+    + DNAT
+    + SNAT
+    + RETURN
+    + <moj_custom_lanac_ime>
+
+
+Hijerarhija:
+
+    TABELE(tables) sadrze LANCE(chains) koji sadrze PRAVILA(rules).
+
+
+
+
+
+
+-------------------------------------------------------------------------------
+
+    1. NIC dobija frame, tj. paket
+    2. NIC pravi "hardware interrupt" (ili NAPI poll)
+    3. Drajver alocira "sk_buff"
+    4. Drajver predaje paket KERNEL-u preko netif_receive_skb()
+    5. Paket ulazi u IP sloj
+
+
+Na specificnom "hook point-u" unutar KERNEL Networking Stack-a, Netfilter je
+pozvan.
+
+Ovi "hook"-ovi su unutar KERNEL-ovog code path-a unutar KERNEL-ovog Networking
+Stack-a.
+
+Znaci oni NISU unutar user-space-a ili unutar drajvera.
+
+Za IPv4 primeri su:
+
+    + NF_INET_PRE_ROUTING
+    + NF_INET_LOCAL_IN
+    + NF_INET_FORWARD
+    + NF_INET_LOCAL_OUT
+    + NF_INET_POST_ROUTING
+
+"iptables" pravila bivaju evaluirana na ovim "hook"-ovima.
+
+Ako PRAVILO(rule) kaze "DROP", paket je odbacen odmah tu unutar KERNEL space-a.
+
+Nikada ne dolazi do samog socket-a. Nikada ne doseze do proces. I nema budjenja
+od strane SCHEDULER-a.
+
+
+Znaci:
+
+    Filtriranje paketa se desava NAKON sto Drajver preda paket IP-stack-u, ali
+    PRE socket lookup-a i PRE predavanja user-space-u, tj. procesu koji
+    "slusa na portu".
+
+-------------------------------------------------------------------------------
+
+Bitno je naglasiti da se paket NE proverava na SVAKOM LANCU(chain).
+Ovo zavisi od:
+    1. Smera kretanja paketa (da li ULAZI, IZLAZI ili je za PROSLEDJIVANJE)
+    2. Ruting odluke
+
+
+Za ULAZNI paket:
+
+    Drajver -> IP Stack -> PREROUTING -> Routing odluka
+
+
+
+Za DOLAZNI paket gde je trenutna masina upravo i krajnja destinacija:
+
+    Drajver -> IP Stack -> PREROUTING -> INPUT -> Routing odluka
+
+
+
+// Tj. ukljucen je "net.ipv4.ip_forward"(provera sa: systcl)
+Za DOLAZNI paket koji je namenjen za drugi racunar(a ukljucen je forwarding).
+
+    Drajver -> IP Stack -> PREROUTING -> FORWARD -> Rout. odluka -> POSTROUTING
+
+
+Za LOKALNO izgenerisane pakete:
+
+    Process -> IP Stack -> OUTPUT -> Routing odluka -> POSTROUTING
+
+
+Vazno je reci da se IMENA LANACA nalaze unutar TABELA(tables).
+Tj. postoji "PREROUTING" lanac unutar "nat" TABELE, ali i unutar "mangle"
+TABELE.
+
+Kernel izvrsava hook-ove u definisanom redosledu po prioritetu TABELE.
+
+-------------------------------------------------------------------------------
+
+##################
+### nat TABELA ###
+##################
+
+    To je TABELA za "Network Address Translation". Ona menja IP adrese ili
+    port-ove.
+
+    Tipicni target-i su: SNAT ili DNAT.
+
+    Ova tabela biva konsultovana samo u specificnim momentima, uglavnom kada
+    se pravi NEW konekcija(SYN flag).
+
+
+#####################
+### mangle TABELA ###
+#####################
+    To je TABELA koja je namenjena za izmenu metapodataka samog paketa.
+    
+    Moze da promenim stvari poput: TOS, TTL, marks, ili druge polja unutar
+    header-a.
+
+    Ona se ne bavi primarno DENY i ALLOW, vec izmenom metapodataka za pakete
+    koji bivaju rutirani ili za QoS odluke.
+
+
+#####################
+### filter TABELA ###
+#####################
+    + INPUT
+    + FORWARD
+    + OUTPUT
+
+
+-------------------------------------------------------------------------------
+
+Kada paket udari u "hook" poput PREROUTING, u tom trentku KERNEL izvrsava sve
+registrovane tabele u kome postoji taj "hook", po prioritetima.
+
+Za Ipv4 PREROUTING, tipican redosled je:
+    + raw
+    + mangle
+    + nat
+
+Znaci TABELE sadrza LANCE, a ne obratno. Ali kada se udari u "hook", taj hook
+se obilazi za sve tabele koje ga imaju.
+
+
+
+-------------------------------------------------------------------------------
+
+
+####################
+### -m conntrack ###
+####################
+
+Netfilter vodi racuna o svim konekcijama(TCP, UDP, itd.) unutar "connctrack"
+MODULA.
+
+Svakom paketu je dodeljen jedan STATE:
+    + NEW
+    + ESTABlISHED
+    + RELATED
+    + INVALID
+
+Koriscenjem "-m conntract --ctstate STATE", neko PRAVILO(rule) moze da se
+poklopi samo sa tim navedenim STATE-om.
+
+Bez "-m" conntract", iptables nema nacina da vidi STATEs konekcija.
+Ako se ne navede, onda iptables moze da vidi samo header-i poput: IP, port ili
+protocol.
+
+
+-------------------------------------------------------------------------------
+
+Redosled je BITAN!
+
+Uvek se izvrsava PRVO PRAVILO koje se potpuno poklopi(match-uje).
+
+######################
+### Bice DROP-ovan ###
+######################
+iptables -A INPUT -s 10.0.0.0/8 -j DROP
+iptables -A INPUT -s 10.0.0.1   -j ACCEPT
+
+
+########################
+### Bice ACCEPT-ovan ###
+########################
+iptables -A INPUT -s 10.0.0.1   -j ACCEPT
+iptables -A INPUT -s 10.0.0.0/8 -j DROP
+
+
+
+##############
+### STATES ###
+##############
+    + NEW            // Paket zapocinje NOVU konekciju. Npr. prvi SYN unutar
+                     // TCP handshake-a
+
+    + ESTABLISHED    // Paket pripada POSTOJECOJ konekciji. Npr. TCP ACK nakon
+                     // handshake-a ili bilokoji odgovor u tekucoj TCP sesiji
+
+    + RELATED        // Paket koji NIJE deo postojece konekcije, ali je povezan
+                     // sa nekom od postojecih konekcija. Npr. ICMP "port
+                     // unreachable" odgovor je povezan za postojecu konekciju.
+
+    + INVALID        // Paket se NE poklapa ni sa jednom poznatom konekcijom
+                     // ili krsi ocekivanja protokola(npr. XMAS za TCP) ili TCP
+                     // paket koji je preveliki za hadnshake ili je nekako
+                     // malformed paket.
+
+
+Tipican "stateful" firewall izgleda ovako:
+
+    ACCEPT --ctstate ESTABLISHED,RELATED
+    ACCEPT --ctstate NEW --dport 22
+    DROP --ctstate INVALID
+
+
+
+iptables -I INPUT 2 -s 202.54.1.2 -j DROP
+
+
+
+
+################
+### Loopback ###
+################
+
+iptables -A INPUT -i lo -j ACCEPTiptables -A OUTPUT -o lo -j ACCEPT
+
+    1. Prvo IZLAZI i udara u OUTPUT chain sa "-o lo".
+    2. Onda je vracena unutar kernel-a.
+    3. Onda ULAZI na "lo" interfejs i udara i INPUT chain sa "-i lo".
+
+
+
+
+
+
+#################
+### -m recent ###
+#################
+
+iptables -A INPUT -p tcp --dport ssh -m conntrack --ctstate NEW -m recent --set
+
+    Appends a rule to INPUT chain.
+
+    -p tcp --dport ssh          // matches TCP packets to port 22
+    -m conntrack --ctstate NEW  // matches packets that start a new connection
+    -m recent --set             // adds the source IP of the packet to a
+                                // “recent” list in the kernel.
+
+Second rule:
+
+iptables -A INPUT -p tcp --dport ssh -m conntrack --ctstate NEW -m recent --update --seconds 60 --hitcount 10 -j DROP
+
+    Same match: TCP port 22, NEW connection.
+
+    -m recent --update --seconds 60 --hitcount 10
+
+    checks the recent list: if this source IP has appeared 10 times within the
+    last 60 seconds, the rule matches.
+
+    -j DROP
+
+
+
+########################
+### filter vs mangle ###
+########################
+
+    ~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ Ako smo SERVER ~~~
+    ~~~~~~~~~~~~~~~~~~~~~~
+
+    Odbaci XMAS pakete
+    # iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
+
+    Odbaci sve NULL pakete
+    # iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
+
+    Blokiraj neuobičajene MSS vrednosti
+    # iptables -t mangle -A PREROUTING -p tcp -m conntrack --ctstate NEW -m tcpmss ! --mss 536:65535 -j DROP
+
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ Ako smo FIREWALL koji forward-uje ~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    Blokiraj pakete sa besmislenim TCP flegovima
+    # iptables -t mangle -A PREROUTING -p tcp --tcp-flags FIN,SYN,RST,PSH,ACK,URG NONE -j DROP
+    # iptables -t mangle -A PREROUTING -p tcp --tcp-flags FIN,SYN FIN,SYN -j DROP
+    # iptables -t mangle -A PREROUTING -p tcp --tcp-flags SYN,RST SYN,RST -j DROP
+    # iptables -t mangle -A PREROUTING -p tcp --tcp-flags FIN,RST FIN,RST -j DROP
+    # iptables -t mangle -A PREROUTING -p tcp --tcp-flags FIN,ACK FIN -j DROP
+    # iptables -t mangle -A PREROUTING -p tcp --tcp-flags ACK,URG URG -j DROP
+    # iptables -t mangle -A PREROUTING -p tcp --tcp-flags ACK,FIN FIN -j DROP
+    # iptables -t mangle -A PREROUTING -p tcp --tcp-flags ACK,PSH PSH -j DROP
+    # iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL ALL -j DROP
+    # iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL NONE -j DROP
+    # iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
+    # iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL SYN,FIN,PSH,URG -j DROP
+    # iptables -t
+
+
+Kratko: nema tehnicke potrebe da XMAS bude u filter/INPUT a ostalo u
+mangle/PREROUTING. To je stil, ne pravilo.
+
+Netfilter hook redosled je: PREROUTING -> routing odluka -> INPUT ili FORWARD
+-> OUTPUT -> POSTROUTING.
+
+mangle/PREROUTING se izvrsava vrlo rano, pre routing odluke. filter/INPUT se
+izvrsava kasnije, samo za pakete koji su destinirani lokalnoj masini.
+
+Zasto neko stavlja ove "los paket" provere u mangle/PREROUTING?
+
+Prvi razlog je drop sto ranije. Ako znas da je paket besmislen, odbacis ga pre
+conntrack, pre routing odluke, pre svega. To je malo efikasnije.
+
+Drugi razlog je obuhvat. PREROUTING vazi i za pakete koji ce ici ka FORWARD, ne
+samo ka INPUT. Ako je masina ruter ili firewall za druge hostove, ova pravila
+ce vaziti i za tranzitni saobracaj.
+
+XMAS u filter/INPUT radi samo za pakete namenjene lokalnom hostu. Ako je masina
+samo server, to je cesto dovoljno.
+
+Dakle, razlika je:
+
+filter/INPUT: samo lokalni saobracaj, kasnija faza. mangle/PREROUTING: sav
+dolazni saobracaj, ranija faza.
+
+Funkcionalno, za host koji nije ruter, oba ce "raditi". Arhitektonski cistije
+je sve ove sanity check provere drzati u mangle/PREROUTING ili raw/PREROUTING,
+konzistentno.
+
+TL;DR Nije zato sto XMAS mora u filter, vec zato sto je neko mesao stilove.
+mangle/PREROUTING je ranije i obuhvata i FORWARD, INPUT samo lokalne pakete.
+
+
+
+
+################
+### Facebook ###
+################
+
+
+whois -h v4.whois.cymru.com " -v $(host facebook.com | grep "has address" |
+cut -d " " -f4)" | tail -n1 | awk '{print $1}'
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ host facebook.com ~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        [vuk@magic ~]$ host facebook.com
+        facebook.com has address 31.13.84.36
+        facebook.com has IPv6 address 2a03:2880:f107:83:face:b00c:0:25de
+        facebook.com mail is handled by 10 smtpin.vvv.facebook.com.
+        facebook.com has HTTP service bindings 1 . alpn="h2,h3"
+        facebook.com has HTTP service bindings 2 star-mini.fallback.c10r.facebook.com. alpn="h2,h3"
+
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ | grep "has address" ~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        [vuk@magic ~]$ host facebook.com | grep "has address"
+        facebook.com has address 31.13.84.36
+    
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ | cut -d " " -f4     ~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        [vuk@magic ~]$ host facebook.com | grep "has address" | cut -d " " -f4
+        31.13.84.36
+        
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ $(host facebook.com | grep "has address" | cut -d " " -f4) ~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        [vuk@magic ~]$ host facebook.com | grep "has address" | cut -d " " -f4
+        31.13.84.36
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     PAYLOAD = "-v $(host facebook.com | grep "has address" | cut -d " " -f4)"
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        "-v 31.13.84.36"
+
+
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ whois -h v4.whois.cymru.com ~~~   // Javno dokumentovani poznati servis
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        [vuk@magic ~]$ whois -h v4.whois.cymru.com "-v 31.13.84.36"
+        Warning: RIPE flags used with a traditional server.
+        AS      | IP               | BGP Prefix          | CC | Registry | Allocated  | AS Name
+        32934   | 31.13.84.36      | 31.13.84.0/24       | IE | ripencc  | 2011-04-18 | FACEBOOK - Facebook, Inc., US
+
+
+    ~~~~~~~~~~~~~~~~~~
+    ~~~ | tail -n1 ~~~
+    ~~~~~~~~~~~~~~~~~~
+
+        [vuk@magic ~]$ whois -h v4.whois.cymru.com "-v 31.13.84.36" | tail -n1
+        32934   | 31.13.84.36      | 31.13.84.0/24       | IE | ripencc  | 2011-04-18 | FACEBOOK - Facebook, Inc., US
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ | awk ' {print $1} ' ~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        [vuk@magic ~]$ whois -h v4.whois.cymru.com "-v 31.13.84.36" | tail -n1 | awk ' {print $1} '
+        32934
+
+
+
+
+
+-------------------------------------------------------------------------------
+
+# for i in $(whois -h whois.radb.net -- '-i origin AS1273' | grep "^route:" |
+cut -d ":" -f2 | sed -e 's/^[ \t]*//' | sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4
+| cut -d ":" -f2 | sed 's/$/;/') ; do iptables -A OUTPUT -s "$i" -j REJECTdone
+
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ whois -h whois.radb.net -- "-i origin AS1273" ~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        ...
+
+        route6:         2a0c:9e04::/32
+        origin:         AS1273
+        mnt-by:         A2-MNT
+        created:        2025-11-17T14:13:51Z
+        last-modified:  2025-11-17T14:13:51Z
+        source:         RIPE
+        remarks:        ****************************
+        remarks:        * THIS OBJECT IS MODIFIED
+        remarks:        * Please note that all data that is generally regarded as personal
+        remarks:        * data has been removed from this object.
+        remarks:        * To view the original object, please query the RIPE Database at:
+        remarks:        * http://www.ripe.net/whois
+        remarks:        ****************************
+        rpki-ov-state:  valid
+
+        route6:         2a0c:fe03::/32
+        origin:         AS1273
+        mnt-by:         A2-MNT
+        created:        2025-11-17T14:14:16Z
+        last-modified:  2025-11-17T14:14:16Z
+        source:         RIPE
+        remarks:        ****************************
+        remarks:        * THIS OBJECT IS MODIFIED
+        remarks:        * Please note that all data that is generally regarded as personal
+        remarks:        * data has been removed from this object.
+        remarks:        * To view the original object, please query the RIPE Database at:
+        remarks:        * http://www.ripe.net/whois
+        remarks:        ****************************
+        rpki-ov-state:  valid
+
+
+
+    whois.radb.net je WHOIS servis od organizacije RADb, odnosno Routing Assets
+    Database. To je deo Internet Routing Registry sistema gde se cuvaju route
+    objekti, tj. zapisi tipa:
+
+    Opcija -h govori lokalnom whois klijentu da se poveze bas na taj server,
+    umesto na default (npr. ARIN, RIPE itd).
+
+    Deo:
+        -i origin AS1273
+
+    je upit u IRR sintaksi i znaci: vrati sve objekte gde je atribut origin
+    jednak AS1273. Drugim recima, vrati sve IP prefikse koje taj ASN oglasava u
+    bazi.
+
+
+    Kako znamo da koristimo bas whois.radb.net?
+
+    Zato sto je RADb jedan od javno poznatih IRR servera koji podrzava ovakve
+    upite. Ovo je dokumentovano u njihovoj WHOIS dokumentaciji. Ljudi koji rade
+    sa BGP-om, filtriranjem ruta ili automatizacijom firewall pravila znaju da:
+
+    1. IRR podaci se dobijaju preko WHOIS protokola
+    2. RADb WHOIS endpoint je whois.radb.net
+    3. Podrzava -i origin upite
+
+    Bez tog znanja iz dokumentacije ili prakse, ne bi pogodio taj hostname.
+
+    ~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ | grep "^route" ~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~
+        ...
+        route:          217.135.0.0/16
+        route:          217.161.0.0/16
+        route6:         2001:7f8:2b::/48
+        route6:         2001:7f8:2c::/48
+        route6:         2001:5000::/21
+        route6:         2a0c:9e00::/32
+        route6:         2a0c:9e01::/32
+        route6:         2a0c:9e04::/32
+        route6:         2a0c:fe03::/32
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ | cut -d ":" -f2 | sed -e 's/^[[:space:]]*//' ~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        ili
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ | cut -d ":" -f2 | sed -e 's/^[ \t]*//' ~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        ...
+        216.31.192.0/20
+        216.239.192.0/19
+        217.134.0.0/15
+        217.135.0.0/16
+        217.161.0.0/16
+        2001
+        2001
+        2001
+        2a0c
+        2a0c
+        2a0c
+        2a0c
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ | sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 ~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        ili
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ | sort --numeric-sort --field-separator=. --key=1,1 --key=2,2 --key=3,3 --key=4,4 ~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        ...
+        212.240.0.0/16
+        212.248.192.0/18
+        213.12.0.0/16
+        213.38.0.0/16
+        213.185.192.0/19
+        213.216.128.0/18
+        216.31.192.0/20
+        216.239.192.0/19
+        217.134.0.0/15
+        217.135.0.0/16
+        217.161.0.0/16
+        2001
+        2001
+        2001
+
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ | sed -e 's/$/;/' ~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        // Dodaj ';' na kraj svake linije
+
+        ...
+        212.240.0.0/16;
+        212.248.192.0/18;
+        213.12.0.0/16;
+        213.38.0.0/16;
+        213.185.192.0/19;
+        213.216.128.0/18;
+        216.31.192.0/20;
+        216.239.192.0/19;
+        217.134.0.0/15;
+        217.135.0.0/16;
+        217.161.0.0/16;
+        2001;
+        2001;
+        2001;
+
+
+    // Ovo se sve izvrsava kao unutrasnja komanda:
+    ~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~ $(whois -h ... ) ~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~
+
+        ...
+        212.240.0.0/16;
+        212.248.192.0/18;
+        213.12.0.0/16;
+        213.38.0.0/16;
+        213.185.192.0/19;
+        213.216.128.0/18;
+        216.31.192.0/20;
+        216.239.192.0/19;
+        217.134.0.0/15;
+        217.135.0.0/16;
+        217.161.0.0/16;
+        2001;
+        2001;
+        2001;
+
+
+    for i in $(who is -h ...); do iptables -A OUTPUT -s "$i" -j REJECT; done
+
+###############################################################################
+##########################   Stateless vs Stateful   ##########################
+###############################################################################
+
+iptables moze biti i stateless i stateful.
+
+Sam netfilter engine u Linux kernelu je u osnovi stateless filtriranje po
+zaglavljima. Ali kada koristis conntrack modul, npr.:
+
+    -m conntrack --ctstate NEW,ESTABLISHED,RELATED
+
+onda postaje stateful, jer kernel vodi tabelu stanja konekcija.
+
+
+U praksi, skoro svi realni iptables firewall-ovi su stateful, jer koriste
+conntrack.
+
+
+
+
+

